@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowRight,
   Calendar,
@@ -34,6 +34,7 @@ import {
   DropdownTrigger,
 } from "@/components/ui/dropdown";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { Planni } from "@/components/planni";
 
 const services = [
   {
@@ -59,16 +60,32 @@ const services = [
   },
 ];
 
+type BookingFlowState = "form" | "error" | "loading" | "success";
+
 export default function Home() {
   const [modalOpen, setModalOpen] = React.useState(false);
-  const [isBooking, setIsBooking] = React.useState(false);
+  const [flowState, setFlowState] = React.useState<BookingFlowState>("form");
+  const [name, setName] = React.useState("Ana Popescu");
+
+  const handleModalOpenChange = (open: boolean) => {
+    setModalOpen(open);
+    if (!open) {
+      // Reset once the close animation has had time to play, so the
+      // content doesn't visibly jump back to the form mid-exit.
+      setTimeout(() => setFlowState("form"), 250);
+    }
+  };
 
   const handleConfirmBooking = () => {
-    setIsBooking(true);
+    if (!name.trim()) {
+      setFlowState("error");
+      return;
+    }
+    setFlowState("loading");
     setTimeout(() => {
-      setIsBooking(false);
-      setModalOpen(false);
-    }, 1200);
+      setFlowState("success");
+      setTimeout(() => setModalOpen(false), 1600);
+    }, 1300);
   };
 
   return (
@@ -105,27 +122,31 @@ export default function Home() {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-          className="flex flex-col items-start gap-5"
+          className="flex flex-col items-center gap-10 sm:flex-row sm:justify-between"
         >
-          <span className="rounded-full border border-border/40 bg-muted/60 px-3 py-1 text-xs font-medium text-muted-foreground">
-            Design system
-          </span>
-          <h1 className="max-w-xl text-4xl font-semibold tracking-tight text-balance">
-            Rezervări, fără fricțiune.
-          </h1>
-          <p className="max-w-md text-[15px] leading-relaxed text-muted-foreground">
-            Componentele de bază ale platformei Planno — construite pentru claritate, viteză
-            și o experiență care se simte la fel de bine la 2 dimineața cât și la prânz.
-          </p>
-          <div className="flex items-center gap-3 pt-2">
-            <Button size="lg" onClick={() => setModalOpen(true)}>
-              Rezervă o programare
-              <ArrowRight className="size-4" />
-            </Button>
-            <Button size="lg" variant="outline">
-              Vezi documentația
-            </Button>
+          <div className="flex flex-col items-start gap-5">
+            <span className="rounded-full border border-border/40 bg-muted/60 px-3 py-1 text-xs font-medium text-muted-foreground">
+              Design system
+            </span>
+            <h1 className="max-w-xl text-4xl font-semibold tracking-tight text-balance">
+              Rezervări, fără fricțiune.
+            </h1>
+            <p className="max-w-md text-[15px] leading-relaxed text-muted-foreground">
+              Componentele de bază ale platformei Planno — construite pentru claritate, viteză
+              și o experiență care se simte la fel de bine la 2 dimineața cât și la prânz.
+            </p>
+            <div className="flex items-center gap-3 pt-2">
+              <Button size="lg" onClick={() => setModalOpen(true)}>
+                Rezervă o programare
+                <ArrowRight className="size-4" />
+              </Button>
+              <Button size="lg" variant="outline">
+                Vezi documentația
+              </Button>
+            </div>
           </div>
+
+          <Planni state="welcome" size={168} message="" className="hidden shrink-0 sm:flex" />
         </motion.section>
 
         <section className="mt-24 space-y-6">
@@ -150,6 +171,23 @@ export default function Home() {
               </Card>
             ))}
           </div>
+        </section>
+
+        <section className="mt-24 space-y-6">
+          <h2 className="text-sm font-medium text-muted-foreground">Rezervările mele</h2>
+          <Card className="flex flex-col items-center gap-4 px-6 py-14 text-center">
+            <Planni state="empty-state" size={128} message="" />
+            <div className="space-y-1.5">
+              <p className="text-sm font-medium text-foreground">Nicio rezervare încă</p>
+              <p className="max-w-xs text-sm text-muted-foreground">
+                Când rezervi un serviciu, îl vei găsi aici — programări viitoare și istoric,
+                tot într-un singur loc.
+              </p>
+            </div>
+            <Button variant="outline" size="sm" onClick={() => setModalOpen(true)}>
+              Rezervă prima ta programare
+            </Button>
+          </Card>
         </section>
 
         <section className="mt-24 space-y-6">
@@ -193,22 +231,89 @@ export default function Home() {
         </section>
       </main>
 
-      <Modal open={modalOpen} onOpenChange={setModalOpen}>
-        <ModalHeader>
-          <ModalTitle>Confirmă programarea</ModalTitle>
-          <ModalDescription>Tuns clasic — 45 min, mâine la 14:00, Salon Bella.</ModalDescription>
-        </ModalHeader>
+      <Modal open={modalOpen} onOpenChange={handleModalOpenChange}>
+        <AnimatePresence mode="wait">
+          {flowState === "form" && (
+            <motion.div
+              key="form"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
+            >
+              <ModalHeader>
+                <ModalTitle>Confirmă programarea</ModalTitle>
+                <ModalDescription>Tuns clasic — 45 min, mâine la 14:00, Salon Bella.</ModalDescription>
+              </ModalHeader>
 
-        <Input label="Nume" placeholder="Numele tău" defaultValue="Ana Popescu" />
+              <Input
+                label="Nume"
+                placeholder="Numele tău"
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+              />
 
-        <ModalFooter>
-          <Button variant="ghost" onClick={() => setModalOpen(false)} disabled={isBooking}>
-            Anulează
-          </Button>
-          <Button onClick={handleConfirmBooking} isLoading={isBooking}>
-            Confirmă
-          </Button>
-        </ModalFooter>
+              <ModalFooter>
+                <Button variant="ghost" onClick={() => setModalOpen(false)}>
+                  Anulează
+                </Button>
+                <Button onClick={handleConfirmBooking}>Confirmă</Button>
+              </ModalFooter>
+            </motion.div>
+          )}
+
+          {flowState === "error" && (
+            <motion.div
+              key="error"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              className="flex flex-col items-center gap-4 py-2 text-center"
+            >
+              <Planni state="error" size={120} message="" />
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-foreground">Numele lipsește</p>
+                <p className="text-sm text-muted-foreground">
+                  Te rugăm completează-ți numele ca să putem confirma programarea.
+                </p>
+              </div>
+              <Button variant="outline" size="sm" onClick={() => setFlowState("form")}>
+                Încearcă din nou
+              </Button>
+            </motion.div>
+          )}
+
+          {flowState === "loading" && (
+            <motion.div
+              key="loading"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              className="flex flex-col items-center py-6"
+            >
+              <Planni state="loading" size={120} />
+            </motion.div>
+          )}
+
+          {flowState === "success" && (
+            <motion.div
+              key="success"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              className="flex flex-col items-center py-4"
+            >
+              <Planni
+                state="success"
+                size={120}
+                message="Rezervare confirmată! Te așteptăm mâine la 14:00."
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </Modal>
     </div>
   );
