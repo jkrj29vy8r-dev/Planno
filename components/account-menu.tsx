@@ -1,0 +1,42 @@
+"use client";
+
+import Link from "next/link";
+import { LayoutDashboard, LogOut, User as UserIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Dropdown,
+  DropdownContent,
+  DropdownItem,
+  DropdownLabel,
+  DropdownSeparator,
+  DropdownTrigger,
+} from "@/components/ui/dropdown";
+import { signOutAction } from "@/lib/actions/auth";
+
+export function AccountMenu({ fullName }: { fullName: string }) {
+  return (
+    <Dropdown>
+      <DropdownTrigger asChild>
+        <Button variant="ghost" size="icon" magnetic={false} aria-label="Meniu cont">
+          <UserIcon className="size-4" />
+        </Button>
+      </DropdownTrigger>
+      <DropdownContent>
+        <DropdownLabel>{fullName}</DropdownLabel>
+        <DropdownItem asChild icon={<LayoutDashboard className="size-4" />}>
+          <Link href="/client/dashboard">Dashboard</Link>
+        </DropdownItem>
+        <DropdownSeparator />
+        <DropdownItem
+          destructive
+          icon={<LogOut className="size-4" />}
+          onSelect={() => {
+            void signOutAction();
+          }}
+        >
+          Deconectare
+        </DropdownItem>
+      </DropdownContent>
+    </Dropdown>
+  );
+}

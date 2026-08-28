@@ -7,72 +7,74 @@ export type Json =
   | Json[]
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "12.2.3"
+    PostgrestVersion: "14.17"
   }
   public: {
     Tables: {
       bookings: {
         Row: {
-          id: string
-          merchant_id: string
-          client_id: string
-          service_id: string
-          status: Database["public"]["Enums"]["booking_status"]
-          start_time: string
-          end_time: string
-          price: number
-          currency: string
-          client_notes: string | null
-          merchant_notes: string | null
           cancellation_reason: string | null
           cancelled_at: string | null
           cancelled_by: string | null
+          client_id: string
+          client_notes: string | null
           created_at: string
+          currency: string
+          end_time: string
+          id: string
+          merchant_id: string
+          merchant_notes: string | null
+          price: number
+          service_id: string
+          start_time: string
+          status: Database["public"]["Enums"]["booking_status"]
           updated_at: string
         }
         Insert: {
-          id?: string
-          merchant_id: string
-          client_id: string
-          service_id: string
-          status?: Database["public"]["Enums"]["booking_status"]
-          start_time: string
-          end_time: string
-          price?: number
-          currency?: string
-          client_notes?: string | null
-          merchant_notes?: string | null
           cancellation_reason?: string | null
           cancelled_at?: string | null
           cancelled_by?: string | null
+          client_id: string
+          client_notes?: string | null
           created_at?: string
+          currency?: string
+          end_time: string
+          id?: string
+          merchant_id: string
+          merchant_notes?: string | null
+          price?: number
+          service_id: string
+          start_time: string
+          status?: Database["public"]["Enums"]["booking_status"]
           updated_at?: string
         }
         Update: {
-          id?: string
-          merchant_id?: string
-          client_id?: string
-          service_id?: string
-          status?: Database["public"]["Enums"]["booking_status"]
-          start_time?: string
-          end_time?: string
-          price?: number
-          currency?: string
-          client_notes?: string | null
-          merchant_notes?: string | null
           cancellation_reason?: string | null
           cancelled_at?: string | null
           cancelled_by?: string | null
+          client_id?: string
+          client_notes?: string | null
           created_at?: string
+          currency?: string
+          end_time?: string
+          id?: string
+          merchant_id?: string
+          merchant_notes?: string | null
+          price?: number
+          service_id?: string
+          start_time?: string
+          status?: Database["public"]["Enums"]["booking_status"]
           updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "bookings_merchant_id_fkey"
-            columns: ["merchant_id"]
+            foreignKeyName: "bookings_cancelled_by_fkey"
+            columns: ["cancelled_by"]
             isOneToOne: false
-            referencedRelation: "merchants"
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
@@ -83,75 +85,78 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "bookings_merchant_id_fkey"
+            columns: ["merchant_id"]
+            isOneToOne: false
+            referencedRelation: "merchants"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "bookings_service_id_fkey"
             columns: ["service_id"]
             isOneToOne: false
             referencedRelation: "services"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "bookings_cancelled_by_fkey"
-            columns: ["cancelled_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
         ]
       }
       merchants: {
         Row: {
-          id: string
-          owner_id: string
-          business_name: string
-          slug: string
-          description: string | null
-          email: string | null
-          phone: string | null
           address: string | null
+          business_name: string
+          category: string
           city: string | null
           country: string
-          logo_url: string | null
-          timezone: string
-          working_hours: Json
-          is_active: boolean
           created_at: string
+          description: string | null
+          email: string | null
+          id: string
+          is_active: boolean
+          logo_url: string | null
+          owner_id: string
+          phone: string | null
+          slug: string
+          timezone: string
           updated_at: string
+          working_hours: Json
         }
         Insert: {
-          id?: string
-          owner_id: string
-          business_name: string
-          slug: string
-          description?: string | null
-          email?: string | null
-          phone?: string | null
           address?: string | null
+          business_name: string
+          category?: string
           city?: string | null
           country?: string
-          logo_url?: string | null
-          timezone?: string
-          working_hours?: Json
-          is_active?: boolean
           created_at?: string
+          description?: string | null
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          logo_url?: string | null
+          owner_id: string
+          phone?: string | null
+          slug: string
+          timezone?: string
           updated_at?: string
+          working_hours?: Json
         }
         Update: {
-          id?: string
-          owner_id?: string
-          business_name?: string
-          slug?: string
-          description?: string | null
-          email?: string | null
-          phone?: string | null
           address?: string | null
+          business_name?: string
+          category?: string
           city?: string | null
           country?: string
-          logo_url?: string | null
-          timezone?: string
-          working_hours?: Json
-          is_active?: boolean
           created_at?: string
+          description?: string | null
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          logo_url?: string | null
+          owner_id?: string
+          phone?: string | null
+          slug?: string
+          timezone?: string
           updated_at?: string
+          working_hours?: Json
         }
         Relationships: [
           {
@@ -165,72 +170,72 @@ export type Database = {
       }
       profiles: {
         Row: {
-          id: string
-          role: Database["public"]["Enums"]["user_role"]
-          full_name: string
-          email: string | null
-          phone: string | null
           avatar_url: string | null
           created_at: string
+          email: string | null
+          full_name: string
+          id: string
+          phone: string | null
+          role: Database["public"]["Enums"]["user_role"]
           updated_at: string
         }
         Insert: {
-          id: string
-          role?: Database["public"]["Enums"]["user_role"]
-          full_name: string
-          email?: string | null
-          phone?: string | null
           avatar_url?: string | null
           created_at?: string
+          email?: string | null
+          full_name: string
+          id: string
+          phone?: string | null
+          role?: Database["public"]["Enums"]["user_role"]
           updated_at?: string
         }
         Update: {
-          id?: string
-          role?: Database["public"]["Enums"]["user_role"]
-          full_name?: string
-          email?: string | null
-          phone?: string | null
           avatar_url?: string | null
           created_at?: string
+          email?: string | null
+          full_name?: string
+          id?: string
+          phone?: string | null
+          role?: Database["public"]["Enums"]["user_role"]
           updated_at?: string
         }
         Relationships: []
       }
       services: {
         Row: {
+          created_at: string
+          currency: string
+          description: string | null
+          duration_minutes: number
           id: string
+          is_active: boolean
           merchant_id: string
           name: string
-          description: string | null
           price: number
-          currency: string
-          duration_minutes: number
-          is_active: boolean
-          created_at: string
           updated_at: string
         }
         Insert: {
+          created_at?: string
+          currency?: string
+          description?: string | null
+          duration_minutes: number
           id?: string
+          is_active?: boolean
           merchant_id: string
           name: string
-          description?: string | null
           price: number
-          currency?: string
-          duration_minutes: number
-          is_active?: boolean
-          created_at?: string
           updated_at?: string
         }
         Update: {
+          created_at?: string
+          currency?: string
+          description?: string | null
+          duration_minutes?: number
           id?: string
+          is_active?: boolean
           merchant_id?: string
           name?: string
-          description?: string | null
           price?: number
-          currency?: string
-          duration_minutes?: number
-          is_active?: boolean
-          created_at?: string
           updated_at?: string
         }
         Relationships: [
@@ -245,48 +250,48 @@ export type Database = {
       }
       subscriptions: {
         Row: {
+          cancel_at_period_end: boolean
+          created_at: string
+          currency: string
+          expires_at: string
           id: string
           merchant_id: string
           plan: Database["public"]["Enums"]["subscription_plan"]
-          status: Database["public"]["Enums"]["subscription_status"]
-          starts_at: string
-          expires_at: string
-          cancel_at_period_end: boolean
           price: number
-          currency: string
+          starts_at: string
+          status: Database["public"]["Enums"]["subscription_status"]
           stripe_customer_id: string | null
           stripe_subscription_id: string | null
-          created_at: string
           updated_at: string
         }
         Insert: {
+          cancel_at_period_end?: boolean
+          created_at?: string
+          currency?: string
+          expires_at: string
           id?: string
           merchant_id: string
           plan: Database["public"]["Enums"]["subscription_plan"]
-          status?: Database["public"]["Enums"]["subscription_status"]
-          starts_at?: string
-          expires_at: string
-          cancel_at_period_end?: boolean
           price: number
-          currency?: string
+          starts_at?: string
+          status?: Database["public"]["Enums"]["subscription_status"]
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
-          created_at?: string
           updated_at?: string
         }
         Update: {
+          cancel_at_period_end?: boolean
+          created_at?: string
+          currency?: string
+          expires_at?: string
           id?: string
           merchant_id?: string
           plan?: Database["public"]["Enums"]["subscription_plan"]
-          status?: Database["public"]["Enums"]["subscription_status"]
-          starts_at?: string
-          expires_at?: string
-          cancel_at_period_end?: boolean
           price?: number
-          currency?: string
+          starts_at?: string
+          status?: Database["public"]["Enums"]["subscription_status"]
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
-          created_at?: string
           updated_at?: string
         }
         Relationships: [
@@ -308,23 +313,43 @@ export type Database = {
         Args: { target_role: Database["public"]["Enums"]["user_role"] }
         Returns: boolean
       }
-      is_admin: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
-      owns_merchant: {
-        Args: { target_merchant_id: string }
-        Returns: boolean
-      }
+      is_admin: { Args: never; Returns: boolean }
       merchant_has_active_subscription: {
         Args: { target_merchant_id: string }
         Returns: boolean
+      }
+      owns_merchant: { Args: { target_merchant_id: string }; Returns: boolean }
+      reschedule_booking: {
+        Args: { p_new_start_time: string; p_old_booking_id: string }
+        Returns: {
+          cancellation_reason: string | null
+          cancelled_at: string | null
+          cancelled_by: string | null
+          client_id: string
+          client_notes: string | null
+          created_at: string
+          currency: string
+          end_time: string
+          id: string
+          merchant_id: string
+          merchant_notes: string | null
+          price: number
+          service_id: string
+          start_time: string
+          status: Database["public"]["Enums"]["booking_status"]
+          updated_at: string
+        }
       }
     }
     Enums: {
       booking_status: "pending" | "confirmed" | "cancelled" | "completed"
       subscription_plan: "monthly" | "quarterly" | "annual"
-      subscription_status: "trialing" | "active" | "past_due" | "cancelled" | "expired"
+      subscription_status:
+        | "trialing"
+        | "active"
+        | "past_due"
+        | "cancelled"
+        | "expired"
       user_role: "client" | "merchant" | "admin"
     }
     CompositeTypes: {
@@ -333,21 +358,25 @@ export type Database = {
   }
 }
 
-type DefaultSchema = Database[Extract<keyof Database, "public">]
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
-    | { schema: keyof Omit<Database, "__InternalSupabase"> },
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof Omit<Database, "__InternalSupabase">
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-        Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof Omit<Database, "__InternalSupabase"> }
-  ? (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-      Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
       Row: infer R
     }
     ? R
@@ -365,14 +394,16 @@ export type Tables<
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
-    | { schema: keyof Omit<Database, "__InternalSupabase"> },
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof Omit<Database, "__InternalSupabase">
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof Omit<Database, "__InternalSupabase"> }
-  ? Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Insert: infer I
     }
     ? I
@@ -388,14 +419,16 @@ export type TablesInsert<
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
-    | { schema: keyof Omit<Database, "__InternalSupabase"> },
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof Omit<Database, "__InternalSupabase">
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof Omit<Database, "__InternalSupabase"> }
-  ? Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Update: infer U
     }
     ? U
@@ -411,14 +444,16 @@ export type TablesUpdate<
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
-    | { schema: keyof Omit<Database, "__InternalSupabase"> },
+    | { schema: keyof DatabaseWithoutInternals },
   EnumName extends DefaultSchemaEnumNameOrOptions extends {
-    schema: keyof Omit<Database, "__InternalSupabase">
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
     : never = never,
-> = DefaultSchemaEnumNameOrOptions extends { schema: keyof Omit<Database, "__InternalSupabase"> }
-  ? Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
     ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
     : never
@@ -426,14 +461,16 @@ export type Enums<
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
-    | { schema: keyof Omit<Database, "__InternalSupabase"> },
+    | { schema: keyof DatabaseWithoutInternals },
   CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
-    schema: keyof Omit<Database, "__InternalSupabase">
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
     : never = never,
-> = PublicCompositeTypeNameOrOptions extends { schema: keyof Omit<Database, "__InternalSupabase"> }
-  ? Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
   : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
     ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never
@@ -443,7 +480,13 @@ export const Constants = {
     Enums: {
       booking_status: ["pending", "confirmed", "cancelled", "completed"],
       subscription_plan: ["monthly", "quarterly", "annual"],
-      subscription_status: ["trialing", "active", "past_due", "cancelled", "expired"],
+      subscription_status: [
+        "trialing",
+        "active",
+        "past_due",
+        "cancelled",
+        "expired",
+      ],
       user_role: ["client", "merchant", "admin"],
     },
   },

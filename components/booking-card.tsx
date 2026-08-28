@@ -1,0 +1,103 @@
+"use client";
+
+import * as React from "react";
+import Link from "next/link";
+import { Calendar, Clock } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { RescheduleModal } from "@/components/reschedule-modal";
+import { CancelBookingModal } from "@/components/cancel-booking-modal";
+import { cn } from "@/lib/utils";
+import { formatBookingStatus, formatDateLong, formatPrice, formatTime } from "@/lib/format";
+import type { BookingWithDetails } from "@/lib/data/bookings";
+
+const STATUS_STYLES: Record<string, string> = {
+  pending: "bg-muted text-muted-foreground",
+  confirmed: "bg-accent/15 text-accent",
+  completed: "bg-muted text-muted-foreground",
+  cancelled: "bg-destructive/10 text-destructive",
+};
+
+export function BookingCard({
+  booking,
+  isUpcoming,
+}: {
+  booking: BookingWithDetails;
+  isUpcoming: boolean;
+}) {
+  const [rescheduleOpen, setRescheduleOpen] = React.useState(false);
+  const [cancelOpen, setCancelOpen] = React.useState(false);
+  const start = new Date(booking.start_time);
+
+  return (
+    <>
+      <Card>
+        <CardContent className="flex flex-col gap-4 pt-6 sm:flex-row sm:items-center sm:justify-between">
+          <div className="space-y-1.5">
+            <div className="flex flex-wrap items-center gap-2">
+              <Link
+                href={`/merchants/${booking.merchant.slug}`}
+                className="font-medium hover:text-accent"
+              >
+                {booking.merchant.business_name}
+              </Link>
+              <span
+                className={cn(
+                  "rounded-full px-2 py-0.5 text-xs font-medium",
+                  STATUS_STYLES[booking.status],
+                )}
+              >
+                {formatBookingStatus(booking.status)}
+              </span>
+            </div>
+            <p className="text-sm text-muted-foreground">{booking.service.name}</p>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+              <span className="flex items-center gap-1.5">
+                <Calendar className="size-3.5" />
+                {formatDateLong(start, booking.merchant.timezone)}
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Clock className="size-3.5" />
+                {formatTime(start, booking.merchant.timezone)}
+              </span>
+              <span className="font-mono">{formatPrice(booking.price, booking.currency)}</span>
+            </div>
+            {booking.status === "cancelled" && booking.cancellation_reason && (
+              <p className="text-xs text-muted-foreground">
+                Motiv: {booking.cancellation_reason}
+              </p>
+            )}
+          </div>
+
+          {isUpcoming && (
+            <div className="flex shrink-0 items-center gap-2">
+              <Button variant="outline" size="sm" onClick={() => setRescheduleOpen(true)}>
+                Reprogramează
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => setCancelOpen(true)}>
+                Anulează
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {isUpcoming && (
+        <>
+          <RescheduleModal
+            open={rescheduleOpen}
+            onOpenChange={setRescheduleOpen}
+            booking={booking}
+            onRescheduled={() => {}}
+          />
+          <CancelBookingModal
+            open={cancelOpen}
+            onOpenChange={setCancelOpen}
+            booking={booking}
+            onCancelled={() => {}}
+          />
+        </>
+      )}
+    </>
+  );
+}
