@@ -1,0 +1,157 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/* next-themes toggles a `.dark` class on <html>; this tells Tailwind's
+   `dark:` variant to key off that class instead of prefers-color-scheme. */
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --radius: 0.625rem;
+
+  /* Deep neutral scale -- true, low-chroma grays. Personality comes
+     from the single warm accent below, not from tinted neutrals. */
+  --background: oklch(0.9911 0.002 75);
+  --foreground: oklch(0.15 0.005 60);
+
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.15 0.005 60);
+
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.15 0.005 60);
+
+  --muted: oklch(0.965 0.003 60);
+  --muted-foreground: oklch(0.48 0.006 60);
+
+  --border: oklch(0.9 0.004 60);
+  --input: oklch(0.88 0.0045 60);
+
+  /* Warm copper/terracotta -- the one saturated color in the system,
+     used sparingly for primary actions and focus states. */
+  --accent: oklch(0.56 0.155 43);
+  --accent-foreground: oklch(0.99 0.005 70);
+
+  --destructive: oklch(0.577 0.245 27);
+  --destructive-foreground: oklch(0.99 0.005 70);
+
+  --ring: oklch(0.56 0.155 43 / 45%);
+
+  --ease-premium: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dark {
+  --background: oklch(0.145 0.004 60);
+  --foreground: oklch(0.96 0.003 70);
+
+  --card: oklch(0.185 0.0045 60);
+  --card-foreground: oklch(0.96 0.003 70);
+
+  --popover: oklch(0.175 0.0045 60);
+  --popover-foreground: oklch(0.96 0.003 70);
+
+  --muted: oklch(0.23 0.004 60);
+  --muted-foreground: oklch(0.65 0.006 60);
+
+  --border: oklch(0.3 0.005 60);
+  --input: oklch(0.32 0.0055 60);
+
+  --accent: oklch(0.66 0.165 43);
+  --accent-foreground: oklch(0.99 0.005 70);
+
+  --destructive: oklch(0.66 0.22 27);
+  --destructive-foreground: oklch(0.99 0.005 70);
+
+  --ring: oklch(0.66 0.165 43 / 45%);
+}
+
+/* Bridges the semantic CSS variables above into real Tailwind utilities:
+   bg-background, border-border, text-muted-foreground, ring-ring, etc.
+   `inline` resolves var(--background) at class-generation time so the
+   utilities react instantly to the .dark toggle with no extra JS. */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+
+  --color-border: var(--border);
+  --color-input: var(--input);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+
+  --color-ring: var(--ring);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-jetbrains-mono);
+}
+
+@layer base {
+  * {
+    @apply border-border/40 outline-ring/50;
+  }
+
+  html {
+    color-scheme: light;
+  }
+
+  html.dark {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings:
+      "cv02", "cv03", "cv04", "cv11";
+  }
+
+  ::selection {
+    background-color: color-mix(in oklch, var(--accent) 30%, transparent);
+    color: var(--foreground);
+  }
+
+  /* Thin, quiet scrollbar -- consistent across browsers, never the
+     default chunky/glossy OS scrollbar that breaks a premium surface. */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: var(--border);
+    border-radius: 9999px;
+    border: 2px solid var(--background);
+  }
+}
+
+@layer components {
+  /* Matte glass -- a blurred, translucent surface with a hairline
+     border and no gloss/shine overlay. Used by Modal and Dropdown, and
+     available directly for anything else (e.g. a sticky nav). */
+  .glass-panel {
+    @apply bg-popover/70 border border-border/40 shadow-xl shadow-black/[0.03] backdrop-blur-xl backdrop-saturate-150 dark:shadow-black/20;
+  }
+}
