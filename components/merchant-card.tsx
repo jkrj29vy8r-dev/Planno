@@ -2,7 +2,7 @@ import Link from "next/link";
 import { MapPin } from "lucide-react";
 import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatPrice } from "@/lib/format";
-import { categoryLabel } from "@/components/merchant-search";
+import { categoryLabel } from "@/lib/categories";
 import type { MerchantListItem } from "@/lib/data/merchants";
 
 export function MerchantCard({ merchant }: { merchant: MerchantListItem }) {

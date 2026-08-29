@@ -5,7 +5,7 @@ import { getCurrentProfile } from "@/lib/data/auth";
 import { getOwnedMerchant } from "@/lib/data/merchant";
 import { MerchantSidebar } from "@/components/merchant/merchant-sidebar";
 import { Planni } from "@/components/planni";
-import { buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/lib/button-variants";
 
 export default async function MerchantDashboardLayout({ children }: { children: ReactNode }) {
   const profile = await getCurrentProfile();

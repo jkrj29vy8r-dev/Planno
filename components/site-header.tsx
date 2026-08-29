@@ -4,7 +4,7 @@ import { getRecentNotifications } from "@/lib/data/bookings";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { AccountMenu } from "@/components/account-menu";
 import { NotificationsMenu } from "@/components/notifications-menu";
-import { buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/lib/button-variants";
 import { cn } from "@/lib/utils";
 
 export async function SiteHeader() {

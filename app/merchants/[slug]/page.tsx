@@ -6,7 +6,7 @@ import { BookingPanel } from "@/components/booking-panel";
 import { Planni } from "@/components/planni";
 import { getMerchantBySlug } from "@/lib/data/merchants";
 import { getCurrentProfile } from "@/lib/data/auth";
-import { categoryLabel } from "@/components/merchant-search";
+import { categoryLabel } from "@/lib/categories";
 
 interface MerchantPageProps {
   params: Promise<{ slug: string }>;

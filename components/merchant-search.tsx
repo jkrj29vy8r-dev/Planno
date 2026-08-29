@@ -5,20 +5,8 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { categoryLabel } from "@/lib/categories";
 import type { MerchantFilterOptions } from "@/lib/data/merchants";
-
-const CATEGORY_LABELS: Record<string, string> = {
-  salon: "Saloane",
-  barbershop: "Frizerii",
-  spa: "Spa",
-  fitness: "Fitness",
-  wellness: "Wellness",
-  altele: "Altele",
-};
-
-export function categoryLabel(category: string): string {
-  return CATEGORY_LABELS[category] ?? category;
-}
 
 interface MerchantSearchProps {
   filterOptions: MerchantFilterOptions;

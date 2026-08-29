@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Planni } from "@/components/planni";
-import { buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/lib/button-variants";
 
 export default function MerchantClientNotFound() {
   return (
