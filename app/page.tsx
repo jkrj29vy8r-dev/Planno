@@ -1,11 +1,10 @@
 import { Suspense } from "react";
-import Link from "next/link";
 import { SiteHeader } from "@/components/site-header";
 import { Hero } from "@/components/home/hero";
+import { FounderLaunchSection } from "@/components/home/founder-launch-section";
 import { MerchantSearch } from "@/components/merchant-search";
 import { MerchantCard } from "@/components/merchant-card";
 import { Planni } from "@/components/planni";
-import { buttonVariants } from "@/lib/button-variants";
 import { getMerchantFilterOptions, searchMerchants } from "@/lib/data/merchants";
 import { getPlatformStats } from "@/lib/data/stats";
 
@@ -45,21 +44,7 @@ export default async function DiscoverPage({ searchParams }: DiscoverPageProps) 
 
       <main id="rezultate" className="mx-auto max-w-6xl scroll-mt-20 px-6 py-12">
         {platformIsEmpty ? (
-          <div className="flex flex-col items-center gap-5 py-20 text-center">
-            <Planni state="empty-state" size={160} message="" />
-            <div className="space-y-2">
-              <p className="text-lg font-medium text-foreground">
-                Niciun comerciant înregistrat încă
-              </p>
-              <p className="max-w-sm text-sm text-muted-foreground">
-                Fii primul care își listează afacerea pe Planno! Clienții tăi te vor găsi din prima
-                zi, fără nicio altă afacere pe listă.
-              </p>
-            </div>
-            <Link href="/signup" className={buttonVariants({ size: "md" })}>
-              Listează-ți afacerea
-            </Link>
-          </div>
+          <FounderLaunchSection />
         ) : (
           <>
             <div className="mb-8 flex flex-col gap-2">

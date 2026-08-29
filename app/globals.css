@@ -171,4 +171,15 @@
   .dark .hero-grid {
     opacity: 0.4;
   }
+
+  /* Fine luminous border for a single flagship card (the founding-
+     partner CTA) -- a hairline ring plus a soft colour-matched glow
+     underneath, both keyed to --accent so light/dark stay correct
+     automatically. Reserved for one card per page; used everywhere it
+     stops reading as an accent and starts reading as noise. */
+  .glow-ring {
+    box-shadow:
+      0 0 0 1px color-mix(in oklch, var(--accent) 30%, transparent),
+      0 40px 100px -36px color-mix(in oklch, var(--accent) 55%, transparent);
+  }
 }
