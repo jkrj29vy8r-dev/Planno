@@ -6,6 +6,7 @@ import { BookingPanel } from "@/components/booking-panel";
 import { Planni } from "@/components/planni";
 import { getMerchantBySlug } from "@/lib/data/merchants";
 import { getCurrentProfile } from "@/lib/data/auth";
+import { merchantAcceptsBookings } from "@/lib/data/subscription";
 import { categoryLabel } from "@/lib/categories";
 
 interface MerchantPageProps {
@@ -25,6 +26,9 @@ export default async function MerchantPage({ params }: MerchantPageProps) {
   if (!merchant) notFound();
 
   const activeServices = merchant.services.filter((service) => service.is_active);
+  // Mirrors the RLS check -- a lapsed merchant's booking insert would be
+  // rejected anyway, so the panel is hidden rather than failing on submit.
+  const acceptsBookings = await merchantAcceptsBookings(merchant.id);
 
   return (
     <div className="min-h-screen bg-background">
@@ -50,7 +54,18 @@ export default async function MerchantPage({ params }: MerchantPageProps) {
           )}
         </div>
 
-        {activeServices.length === 0 ? (
+        {!acceptsBookings ? (
+          <div className="flex flex-col items-center gap-4 rounded-xl border border-border/40 bg-card py-16 text-center">
+            <Planni state="empty-state" size={128} message="" />
+            <div className="space-y-1">
+              <p className="text-sm font-medium">Rezervările sunt momentan indisponibile</p>
+              <p className="mx-auto max-w-sm text-sm text-muted-foreground">
+                {merchant.business_name} nu preia rezervări online în această perioadă. Încearcă din
+                nou mai târziu sau contactează direct comerciantul.
+              </p>
+            </div>
+          </div>
+        ) : activeServices.length === 0 ? (
           <div className="flex flex-col items-center gap-4 rounded-xl border border-border/40 bg-card py-16 text-center">
             <Planni state="empty-state" size={128} message="" />
             <div>

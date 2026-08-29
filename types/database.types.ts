@@ -309,14 +309,43 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      activate_merchant_subscription: {
+        Args: {
+          p_merchant_id: string
+          p_plan: Database["public"]["Enums"]["subscription_plan"]
+        }
+        Returns: {
+          cancel_at_period_end: boolean
+          created_at: string
+          currency: string
+          expires_at: string
+          id: string
+          merchant_id: string
+          plan: Database["public"]["Enums"]["subscription_plan"]
+          price: number
+          starts_at: string
+          status: Database["public"]["Enums"]["subscription_status"]
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          updated_at: string
+        }
+      }
       has_role: {
         Args: { target_role: Database["public"]["Enums"]["user_role"] }
         Returns: boolean
       }
       is_admin: { Args: never; Returns: boolean }
+      merchant_accepts_bookings: {
+        Args: { target_merchant_id: string }
+        Returns: boolean
+      }
       merchant_has_active_subscription: {
         Args: { target_merchant_id: string }
         Returns: boolean
+      }
+      merchant_subscription_state: {
+        Args: { target_merchant_id: string }
+        Returns: string
       }
       owns_merchant: { Args: { target_merchant_id: string }; Returns: boolean }
       reschedule_booking: {
@@ -337,6 +366,24 @@ export type Database = {
           service_id: string
           start_time: string
           status: Database["public"]["Enums"]["booking_status"]
+          updated_at: string
+        }
+      }
+      set_subscription_cancel_at_period_end: {
+        Args: { p_cancel: boolean; p_merchant_id: string }
+        Returns: {
+          cancel_at_period_end: boolean
+          created_at: string
+          currency: string
+          expires_at: string
+          id: string
+          merchant_id: string
+          plan: Database["public"]["Enums"]["subscription_plan"]
+          price: number
+          starts_at: string
+          status: Database["public"]["Enums"]["subscription_status"]
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
           updated_at: string
         }
       }

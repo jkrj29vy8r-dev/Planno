@@ -3,7 +3,10 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getCurrentProfile } from "@/lib/data/auth";
 import { getOwnedMerchant } from "@/lib/data/merchant";
+import { getMerchantSubscriptionAccess } from "@/lib/data/subscription";
 import { MerchantSidebar } from "@/components/merchant/merchant-sidebar";
+import { SubscriptionBanner } from "@/components/merchant/subscription-banner";
+import { SubscriptionPaywall } from "@/components/merchant/subscription-paywall";
 import { Planni } from "@/components/planni";
 import { buttonVariants } from "@/lib/button-variants";
 
@@ -30,10 +33,25 @@ export default async function MerchantDashboardLayout({ children }: { children: 
     );
   }
 
+  // Gating lives in the layout so it covers every route beneath it --
+  // a new dashboard page can't accidentally ship unprotected. The
+  // database enforces the same rule on writes; this is the UI half.
+  const access = await getMerchantSubscriptionAccess(merchant.id);
+  const isLocked = access.state === "locked";
+
   return (
     <div className="flex min-h-screen bg-background">
-      <MerchantSidebar businessName={merchant.business_name} />
-      <main className="min-w-0 flex-1">{children}</main>
+      <MerchantSidebar businessName={merchant.business_name} locked={isLocked} />
+      <main className="min-w-0 flex-1">
+        {isLocked ? (
+          <SubscriptionPaywall merchantId={merchant.id} access={access} />
+        ) : (
+          <>
+            <SubscriptionBanner access={access} />
+            {children}
+          </>
+        )}
+      </main>
     </div>
   );
 }
