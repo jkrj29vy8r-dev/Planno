@@ -1,14 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
 import { dayKeyInZone, zonedWallTimeToUtc } from "@/lib/timezone";
+import type { DayHours } from "@/lib/working-hours";
 import type { Json } from "@/types/database.types";
 
 const SLOT_INTERVAL_MINUTES = 30;
-
-interface DayHours {
-  is_open: boolean;
-  open: string | null;
-  close: string | null;
-}
 
 export interface AvailabilityParams {
   merchantId: string;
@@ -57,6 +52,16 @@ export async function getAvailableSlots({
     start: new Date(b.start_time).getTime(),
     end: new Date(b.end_time).getTime(),
   }));
+
+  // Breaks (e.g. lunch) block the same way an existing booking does --
+  // a candidate slot overlapping any part of a break is not offered.
+  for (const brk of hours.breaks ?? []) {
+    if (!brk.start || !brk.end) continue;
+    busy.push({
+      start: zonedWallTimeToUtc(date, brk.start, timezone).getTime(),
+      end: zonedWallTimeToUtc(date, brk.end, timezone).getTime(),
+    });
+  }
 
   const now = Date.now();
   const durationMs = durationMinutes * 60_000;

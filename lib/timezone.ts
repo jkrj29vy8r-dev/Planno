@@ -55,3 +55,22 @@ export function formatTimeInZone(date: Date, timeZone: string): string {
 export function todayInZone(timeZone: string): string {
   return new Intl.DateTimeFormat("en-CA", { timeZone }).format(new Date());
 }
+
+/** Any UTC instant's calendar date as "YYYY-MM-DD" in `timeZone`. */
+export function dateKeyInZone(date: Date, timeZone: string): string {
+  return new Intl.DateTimeFormat("en-CA", { timeZone }).format(date);
+}
+
+/** Minutes since local midnight, in `timeZone`, for a UTC instant --
+ *  used to position a booking inside an hour-grid day/week calendar. */
+export function minutesSinceMidnightInZone(date: Date, timeZone: string): number {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    hourCycle: "h23",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).formatToParts(date);
+  const hour = Number(parts.find((p) => p.type === "hour")?.value ?? 0);
+  const minute = Number(parts.find((p) => p.type === "minute")?.value ?? 0);
+  return hour * 60 + minute;
+}

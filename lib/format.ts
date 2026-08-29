@@ -63,6 +63,7 @@ const STATUS_LABELS: Record<string, string> = {
   confirmed: "Confirmată",
   cancelled: "Anulată",
   completed: "Finalizată",
+  no_show: "Neprezentare",
 };
 
 export function formatBookingStatus(status: string): string {
