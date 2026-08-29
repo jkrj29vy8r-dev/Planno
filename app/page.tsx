@@ -1,9 +1,11 @@
 import { Suspense } from "react";
 import { SiteHeader } from "@/components/site-header";
+import { Hero } from "@/components/home/hero";
 import { MerchantSearch } from "@/components/merchant-search";
 import { MerchantCard } from "@/components/merchant-card";
 import { Planni } from "@/components/planni";
 import { getMerchantFilterOptions, searchMerchants } from "@/lib/data/merchants";
+import { getPlatformStats } from "@/lib/data/stats";
 
 interface DiscoverPageProps {
   searchParams: Promise<{ q?: string; category?: string; city?: string }>;
@@ -11,9 +13,13 @@ interface DiscoverPageProps {
 
 export default async function DiscoverPage({ searchParams }: DiscoverPageProps) {
   const params = await searchParams;
-  const [merchants, filterOptions] = await Promise.all([
+  const [merchants, filterOptions, stats, allMerchants] = await Promise.all([
     searchMerchants({ query: params.q, category: params.category, city: params.city }),
     getMerchantFilterOptions(),
+    getPlatformStats(),
+    // The hero showcases the whole catalogue regardless of the filters
+    // applied to the results below it, so it never empties out mid-search.
+    searchMerchants(),
   ]);
 
   const hasActiveFilters = Boolean(params.q || params.category || params.city);
@@ -22,13 +28,24 @@ export default async function DiscoverPage({ searchParams }: DiscoverPageProps) 
     <div className="min-h-screen bg-background">
       <SiteHeader />
 
-      <main className="mx-auto max-w-6xl px-6 py-12">
+      <Hero
+        merchants={allMerchants}
+        cities={filterOptions.cities}
+        categories={filterOptions.categories}
+        stats={stats}
+        initialQuery={params.q}
+        initialCity={params.city}
+      />
+
+      <main id="rezultate" className="mx-auto max-w-6xl scroll-mt-20 px-6 py-12">
         <div className="mb-8 flex flex-col gap-2">
-          <h1 className="text-3xl font-semibold tracking-tight text-balance">
-            Găsește-ți următoarea programare
-          </h1>
+          <h2 className="text-2xl font-semibold tracking-tight text-balance">
+            {hasActiveFilters ? "Rezultatele căutării" : "Toate afacerile de pe Planno"}
+          </h2>
           <p className="text-muted-foreground">
-            Descoperă comercianți din apropiere și rezervă în câteva clickuri.
+            {hasActiveFilters
+              ? `${merchants.length} ${merchants.length === 1 ? "rezultat" : "rezultate"} pentru filtrele active.`
+              : "Filtrează după categorie sau oraș și rezervă în câteva clickuri."}
           </p>
         </div>
 
