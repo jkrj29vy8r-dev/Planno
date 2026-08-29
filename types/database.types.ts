@@ -107,6 +107,7 @@ export type Database = {
           category: string
           city: string | null
           country: string
+          cover_image_url: string | null
           created_at: string
           description: string | null
           email: string | null
@@ -115,6 +116,8 @@ export type Database = {
           logo_url: string | null
           owner_id: string
           phone: string | null
+          rating: number | null
+          rating_count: number
           slug: string
           timezone: string
           updated_at: string
@@ -126,6 +129,7 @@ export type Database = {
           category?: string
           city?: string | null
           country?: string
+          cover_image_url?: string | null
           created_at?: string
           description?: string | null
           email?: string | null
@@ -134,6 +138,8 @@ export type Database = {
           logo_url?: string | null
           owner_id: string
           phone?: string | null
+          rating?: number | null
+          rating_count?: number
           slug: string
           timezone?: string
           updated_at?: string
@@ -145,6 +151,7 @@ export type Database = {
           category?: string
           city?: string | null
           country?: string
+          cover_image_url?: string | null
           created_at?: string
           description?: string | null
           email?: string | null
@@ -153,6 +160,8 @@ export type Database = {
           logo_url?: string | null
           owner_id?: string
           phone?: string | null
+          rating?: number | null
+          rating_count?: number
           slug?: string
           timezone?: string
           updated_at?: string

@@ -2,8 +2,7 @@
 
 import * as React from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Search } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { MapPin, Search, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { categoryLabel } from "@/lib/categories";
 import type { MerchantFilterOptions } from "@/lib/data/merchants";
@@ -25,6 +24,7 @@ export function MerchantSearch({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [query, setQuery] = React.useState(activeQuery ?? "");
+  const [focused, setFocused] = React.useState(false);
 
   function updateParam(key: string, value: string | null) {
     const params = new URLSearchParams(searchParams.toString());
@@ -43,13 +43,32 @@ export function MerchantSearch({
 
   return (
     <div className="flex flex-col gap-4">
-      <Input
-        placeholder="Caută un salon, o frizerie, un spa..."
-        leftIcon={<Search className="size-4" />}
-        value={query}
-        onChange={(event) => setQuery(event.target.value)}
-        className="max-w-md"
-      />
+      <div
+        className={cn(
+          "flex max-w-md items-center gap-2.5 rounded-xl border bg-card px-4 py-2.5 shadow-sm transition-shadow",
+          focused ? "border-accent/50 shadow-md ring-4 ring-ring" : "border-border/50",
+        )}
+      >
+        <Search className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+        <input
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
+          placeholder="Caută un salon, o frizerie, un spa..."
+          className="min-w-0 flex-1 bg-transparent text-[15px] text-foreground outline-none placeholder:text-muted-foreground/70"
+        />
+        {query && (
+          <button
+            type="button"
+            onClick={() => setQuery("")}
+            aria-label="Șterge căutarea"
+            className="rounded-full p-0.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          >
+            <X className="size-3.5" />
+          </button>
+        )}
+      </div>
 
       <div className="flex flex-wrap items-center gap-2">
         <FilterChip active={!activeCategory} onClick={() => updateParam("category", null)}>
@@ -67,11 +86,12 @@ export function MerchantSearch({
 
         {filterOptions.cities.length > 0 && (
           <>
-            <span aria-hidden="true" className="mx-1 h-4 w-px bg-border" />
+            <span aria-hidden="true" className="mx-1.5 h-5 w-px bg-border/70" />
             {filterOptions.cities.map((city) => (
               <FilterChip
                 key={city}
                 active={activeCity === city}
+                icon={<MapPin className="size-3.5" />}
                 onClick={() => updateParam("city", activeCity === city ? null : city)}
               >
                 {city}
@@ -87,10 +107,12 @@ export function MerchantSearch({
 function FilterChip({
   active,
   onClick,
+  icon,
   children,
 }: {
   active: boolean;
   onClick: () => void;
+  icon?: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (
@@ -98,12 +120,13 @@ function FilterChip({
       type="button"
       onClick={onClick}
       className={cn(
-        "rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors",
+        "flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm font-medium transition-all duration-150",
         active
-          ? "border-accent bg-accent text-accent-foreground"
-          : "border-border/60 bg-transparent text-foreground/80 hover:bg-muted/60",
+          ? "bg-accent text-accent-foreground shadow-sm shadow-accent/20"
+          : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground",
       )}
     >
+      {icon && <span className={cn(active ? "opacity-90" : "opacity-60")}>{icon}</span>}
       {children}
     </button>
   );

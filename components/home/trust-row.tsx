@@ -1,25 +1,7 @@
 import { Star } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { avatarGradient, initials } from "@/lib/avatar";
 import type { PlatformStats } from "@/lib/data/stats";
-
-/** Deterministic hue per name, so an avatar keeps its colour between
- *  renders and between server and client. */
-function hueFor(name: string): number {
-  let hash = 0;
-  for (let i = 0; i < name.length; i += 1) {
-    hash = (hash * 31 + name.charCodeAt(i)) % 360;
-  }
-  return hash;
-}
-
-function initials(name: string): string {
-  return name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() ?? "")
-    .join("");
-}
 
 interface TrustRowProps {
   /** Real business names, used for the avatar stack. */
@@ -41,9 +23,7 @@ export function TrustRow({ names, stats, className }: TrustRowProps) {
               key={name}
               title={name}
               className="flex size-9 items-center justify-center rounded-full text-[11px] font-semibold text-white ring-2 ring-background"
-              style={{
-                background: `linear-gradient(140deg, oklch(0.62 0.11 ${hueFor(name)}), oklch(0.42 0.09 ${(hueFor(name) + 40) % 360}))`,
-              }}
+              style={{ background: avatarGradient(name) }}
             >
               {initials(name)}
             </span>
