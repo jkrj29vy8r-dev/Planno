@@ -1,9 +1,11 @@
 import { Suspense } from "react";
+import Link from "next/link";
 import { SiteHeader } from "@/components/site-header";
 import { Hero } from "@/components/home/hero";
 import { MerchantSearch } from "@/components/merchant-search";
 import { MerchantCard } from "@/components/merchant-card";
 import { Planni } from "@/components/planni";
+import { buttonVariants } from "@/lib/button-variants";
 import { getMerchantFilterOptions, searchMerchants } from "@/lib/data/merchants";
 import { getPlatformStats } from "@/lib/data/stats";
 
@@ -23,6 +25,10 @@ export default async function DiscoverPage({ searchParams }: DiscoverPageProps) 
   ]);
 
   const hasActiveFilters = Boolean(params.q || params.category || params.city);
+  // Distinguishes "nothing on the platform yet" from "nothing matches this
+  // filter" -- with zero merchants site-wide, every filter combination
+  // returns empty, so the filter UI itself has nothing to offer either.
+  const platformIsEmpty = allMerchants.length === 0;
 
   return (
     <div className="min-h-screen bg-background">
@@ -38,46 +44,62 @@ export default async function DiscoverPage({ searchParams }: DiscoverPageProps) 
       />
 
       <main id="rezultate" className="mx-auto max-w-6xl scroll-mt-20 px-6 py-12">
-        <div className="mb-8 flex flex-col gap-2">
-          <h2 className="text-2xl font-semibold tracking-tight text-balance">
-            {hasActiveFilters ? "Rezultatele căutării" : "Toate afacerile de pe Planno"}
-          </h2>
-          <p className="text-muted-foreground">
-            {hasActiveFilters
-              ? `${merchants.length} ${merchants.length === 1 ? "rezultat" : "rezultate"} pentru filtrele active.`
-              : "Filtrează după categorie sau oraș și rezervă în câteva clickuri."}
-          </p>
-        </div>
-
-        <Suspense>
-          <MerchantSearch
-            filterOptions={filterOptions}
-            activeQuery={params.q}
-            activeCategory={params.category}
-            activeCity={params.city}
-          />
-        </Suspense>
-
-        {merchants.length === 0 ? (
-          <div className="flex flex-col items-center gap-4 py-20 text-center">
-            <Planni state="empty-state" size={140} message="" />
-            <div className="space-y-1.5">
-              <p className="text-sm font-medium text-foreground">
-                {hasActiveFilters ? "Niciun rezultat" : "Niciun comerciant momentan"}
+        {platformIsEmpty ? (
+          <div className="flex flex-col items-center gap-5 py-20 text-center">
+            <Planni state="empty-state" size={160} message="" />
+            <div className="space-y-2">
+              <p className="text-lg font-medium text-foreground">
+                Niciun comerciant înregistrat încă
               </p>
-              <p className="max-w-xs text-sm text-muted-foreground">
-                {hasActiveFilters
-                  ? "Încearcă alți termeni de căutare sau elimină filtrele active."
-                  : "Revino în curând -- adăugăm comercianți noi constant."}
+              <p className="max-w-sm text-sm text-muted-foreground">
+                Fii primul care își listează afacerea pe Planno! Clienții tăi te vor găsi din prima
+                zi, fără nicio altă afacere pe listă.
               </p>
             </div>
+            <Link href="/signup" className={buttonVariants({ size: "md" })}>
+              Listează-ți afacerea
+            </Link>
           </div>
         ) : (
-          <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {merchants.map((merchant) => (
-              <MerchantCard key={merchant.id} merchant={merchant} />
-            ))}
-          </div>
+          <>
+            <div className="mb-8 flex flex-col gap-2">
+              <h2 className="text-2xl font-semibold tracking-tight text-balance">
+                {hasActiveFilters ? "Rezultatele căutării" : "Toate afacerile de pe Planno"}
+              </h2>
+              <p className="text-muted-foreground">
+                {hasActiveFilters
+                  ? `${merchants.length} ${merchants.length === 1 ? "rezultat" : "rezultate"} pentru filtrele active.`
+                  : "Filtrează după categorie sau oraș și rezervă în câteva clickuri."}
+              </p>
+            </div>
+
+            <Suspense>
+              <MerchantSearch
+                filterOptions={filterOptions}
+                activeQuery={params.q}
+                activeCategory={params.category}
+                activeCity={params.city}
+              />
+            </Suspense>
+
+            {merchants.length === 0 ? (
+              <div className="flex flex-col items-center gap-4 py-20 text-center">
+                <Planni state="empty-state" size={140} message="" />
+                <div className="space-y-1.5">
+                  <p className="text-sm font-medium text-foreground">Niciun rezultat</p>
+                  <p className="max-w-xs text-sm text-muted-foreground">
+                    Încearcă alți termeni de căutare sau elimină filtrele active.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                {merchants.map((merchant) => (
+                  <MerchantCard key={merchant.id} merchant={merchant} />
+                ))}
+              </div>
+            )}
+          </>
         )}
       </main>
     </div>

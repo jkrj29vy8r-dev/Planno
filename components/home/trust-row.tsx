@@ -11,6 +11,11 @@ interface TrustRowProps {
 }
 
 export function TrustRow({ names, stats, className }: TrustRowProps) {
+  // Nothing honest to show yet: a "0 afaceri active" line with a rating
+  // of stars next to it would be the exact fabricated-trust look this
+  // component exists to avoid.
+  if (stats.merchants === 0) return null;
+
   const shown = names.slice(0, 5);
   const overflow = Math.max(0, stats.merchants - shown.length);
 

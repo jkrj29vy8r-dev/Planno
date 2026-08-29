@@ -1,8 +1,11 @@
+import Link from "next/link";
 import { CalendarCheck, Zap } from "lucide-react";
 import { HeroSearch } from "@/components/home/hero-search";
 import { HeroShowcase, type ShowcaseCategory } from "@/components/home/hero-showcase";
 import { PlanniTip } from "@/components/home/planni-tip";
 import { TrustRow } from "@/components/home/trust-row";
+import { Planni } from "@/components/planni";
+import { buttonVariants } from "@/lib/button-variants";
 import { categoryLabel } from "@/lib/categories";
 import type { PlatformStats } from "@/lib/data/stats";
 import type { MerchantListItem } from "@/lib/data/merchants";
@@ -55,6 +58,28 @@ function buildTips(merchants: MerchantListItem[], cities: string[]): string[] {
   tips.push("Rezervi în 3 clickuri: alegi serviciul, ora, gata.");
 
   return tips;
+}
+
+/** Replaces the category showcase when the platform has no merchants
+ *  yet -- an inviting, on-brand slot rather than an empty grid column. */
+function FirstPartnerPanel() {
+  return (
+    <div className="glass-panel flex flex-col items-center gap-4 rounded-2xl px-8 py-10 text-center">
+      <Planni state="welcome" size={104} message="" />
+      <div className="space-y-1.5">
+        <p className="text-lg font-semibold tracking-tight text-balance">
+          Fii primul comerciant de pe Planno
+        </p>
+        <p className="max-w-xs text-sm leading-relaxed text-muted-foreground">
+          Platforma tocmai a pornit — primele afaceri listate ajung în fața clienților fără nicio
+          concurență pe pagina principală.
+        </p>
+      </div>
+      <Link href="/signup" className={buttonVariants({ size: "md" })}>
+        Listează-ți afacerea
+      </Link>
+    </div>
+  );
 }
 
 export function Hero({ merchants, cities, categories, stats, initialQuery, initialCity }: HeroProps) {
@@ -122,11 +147,16 @@ export function Hero({ merchants, cities, categories, stats, initialQuery, initi
         </div>
 
         <div className="relative">
-          <HeroShowcase categories={showcase} />
-
-          <div className="mt-6 hidden lg:flex">
-            <PlanniTip tips={tips} />
-          </div>
+          {showcase.length > 0 ? (
+            <>
+              <HeroShowcase categories={showcase} />
+              <div className="mt-6 hidden lg:flex">
+                <PlanniTip tips={tips} />
+              </div>
+            </>
+          ) : (
+            <FirstPartnerPanel />
+          )}
         </div>
       </div>
     </section>

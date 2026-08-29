@@ -2,10 +2,10 @@ import Link from "next/link";
 import Image from "next/image";
 import { MapPin, Star } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { CategoryIllustration } from "@/components/category-illustration";
 import { cn } from "@/lib/utils";
 import { formatPrice } from "@/lib/format";
 import { categoryLabel } from "@/lib/categories";
-import { categoryVisual } from "@/lib/category-visuals";
 import { avatarGradient, initials } from "@/lib/avatar";
 import type { MerchantListItem } from "@/lib/data/merchants";
 
@@ -13,42 +13,40 @@ export function MerchantCard({ merchant }: { merchant: MerchantListItem }) {
   const activeServices = merchant.services;
   const fromPrice = activeServices.length > 0 ? Math.min(...activeServices.map((s) => s.price)) : null;
   const currency = activeServices[0]?.currency ?? "RON";
-  const visual = categoryVisual(merchant.category);
-  const Icon = visual.icon;
-  const coverPhoto = merchant.cover_image_url ?? visual.photo;
   const hasRating = merchant.rating !== null && merchant.rating_count > 0;
 
   return (
     <Link href={`/merchants/${merchant.slug}`} className="group block h-full">
       <Card hover className="flex h-full flex-col overflow-hidden p-0">
-        {/* Cover -- a real photo when the merchant has one, otherwise the
-            category's own gradient (and photo, if that category has one)
-            from lib/category-visuals.ts. Never a flat placeholder rectangle. */}
+        {/* Cover: a real photo when the merchant has set one, otherwise a
+            generated illustration for its category (never a shared stock
+            photo -- see components/category-illustration.tsx for why).
+            Every overlay below (label, rating, logo) is positioned INSIDE
+            this box with real margin from every edge, so nothing straddles
+            the seam with the content area and nothing can clip. */}
         <div className="relative h-36 shrink-0 overflow-hidden">
-          <div
-            className="absolute inset-0"
-            style={{ background: `linear-gradient(155deg, ${visual.from}, ${visual.to})` }}
-          />
-          {coverPhoto && (
+          {merchant.cover_image_url ? (
             <Image
-              src={coverPhoto}
+              src={merchant.cover_image_url}
               alt=""
               fill
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-              className="object-cover opacity-95 transition-transform duration-500 ease-[var(--ease-premium)] group-hover:scale-105"
+              className="object-cover transition-transform duration-500 ease-[var(--ease-premium)] group-hover:scale-105"
             />
-          )}
-          {!coverPhoto && (
-            <Icon
-              className="absolute inset-0 m-auto size-9 text-white/50"
-              aria-hidden="true"
-              strokeWidth={1.5}
+          ) : (
+            <CategoryIllustration
+              category={merchant.category}
+              className="transition-transform duration-500 ease-[var(--ease-premium)] group-hover:scale-105"
             />
           )}
 
-          {/* Bottom scrim: not decorative -- it's what keeps the logo's
-              white ring and the category label readable over a bright photo. */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/0 to-black/10" />
+          {/* Bottom scrim: keeps the logo's ring and the category label
+              readable regardless of what sits underneath it. */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/0 to-black/10" />
+
+          <span className="absolute left-3 top-3 rounded-full bg-black/35 px-2.5 py-1 text-[11px] font-medium text-white/90 backdrop-blur-sm">
+            {categoryLabel(merchant.category)}
+          </span>
 
           {hasRating && (
             <div className="glass-panel absolute right-3 top-3 flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold text-white">
@@ -57,30 +55,27 @@ export function MerchantCard({ merchant }: { merchant: MerchantListItem }) {
             </div>
           )}
 
-          <span className="absolute left-3 top-3 rounded-full bg-black/35 px-2.5 py-1 text-[11px] font-medium text-white/90 backdrop-blur-sm">
-            {categoryLabel(merchant.category)}
-          </span>
+          {/* Logo, bottom-left of the cover with real padding on every
+              side (12px bottom, 16px left) -- fully inside this h-36 box,
+              never overlapping into CardContent below. */}
+          <div className="absolute bottom-3 left-4">
+            {merchant.logo_url ? (
+              <div className="relative size-11 overflow-hidden rounded-xl ring-2 ring-white/90">
+                <Image src={merchant.logo_url} alt="" fill sizes="44px" className="object-cover" />
+              </div>
+            ) : (
+              <div
+                className="flex size-11 items-center justify-center rounded-xl text-sm font-semibold text-white ring-2 ring-white/90"
+                style={{ background: avatarGradient(merchant.business_name) }}
+                aria-hidden="true"
+              >
+                {initials(merchant.business_name)}
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Logo -- overlaps the seam between cover and content, the way a
-            business avatar sits on a marketplace card (Airbnb, Mero). */}
-        <div className="-mt-6 px-5">
-          {merchant.logo_url ? (
-            <div className="relative size-12 overflow-hidden rounded-xl ring-4 ring-card">
-              <Image src={merchant.logo_url} alt="" fill sizes="48px" className="object-cover" />
-            </div>
-          ) : (
-            <div
-              className="flex size-12 items-center justify-center rounded-xl text-sm font-semibold text-white ring-4 ring-card"
-              style={{ background: avatarGradient(merchant.business_name) }}
-              aria-hidden="true"
-            >
-              {initials(merchant.business_name)}
-            </div>
-          )}
-        </div>
-
-        <CardContent className="flex flex-1 flex-col gap-1.5 px-5 pb-5 pt-2.5">
+        <CardContent className="flex flex-1 flex-col gap-1.5 px-5 pb-5 pt-4">
           <h3 className="truncate text-[15px] font-semibold tracking-tight">{merchant.business_name}</h3>
 
           {merchant.description && (
