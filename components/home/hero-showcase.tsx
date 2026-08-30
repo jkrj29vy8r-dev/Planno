@@ -23,7 +23,7 @@ export function HeroShowcase({ categories }: { categories: ShowcaseCategory[] })
 
   return (
     <MotionConfig reducedMotion="user">
-      <div className="grid grid-cols-2 gap-3 sm:gap-4">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
         {categories.slice(0, 4).map((category, index) => (
           <motion.div
             key={category.id}

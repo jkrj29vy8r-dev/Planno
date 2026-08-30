@@ -172,6 +172,26 @@
     opacity: 0.4;
   }
 
+  /* One focal light source for the hero, centered behind the search
+     island instead of corner washes competing for attention. Keyed to
+     --accent so it stays correct in both themes with no separate dark
+     override needed beyond the stronger mix below. */
+  .hero-spotlight {
+    background: radial-gradient(
+      52% 45% at 50% 38%,
+      color-mix(in oklch, var(--accent) 16%, transparent),
+      transparent 72%
+    );
+  }
+
+  .dark .hero-spotlight {
+    background: radial-gradient(
+      52% 45% at 50% 38%,
+      color-mix(in oklch, var(--accent) 24%, transparent),
+      transparent 72%
+    );
+  }
+
   /* Fine luminous border for a single flagship card (the founding-
      partner CTA) -- a hairline ring plus a soft colour-matched glow
      underneath, both keyed to --accent so light/dark stay correct
