@@ -1,12 +1,10 @@
-import Link from "next/link";
 import { CalendarCheck, Zap } from "lucide-react";
 import { HeroSearch } from "@/components/home/hero-search";
 import { HeroShowcase, type ShowcaseCategory } from "@/components/home/hero-showcase";
 import { PlanniTip } from "@/components/home/planni-tip";
 import { TrustRow } from "@/components/home/trust-row";
-import { Planni } from "@/components/planni";
-import { buttonVariants } from "@/lib/button-variants";
 import { categoryLabel } from "@/lib/categories";
+import { cn } from "@/lib/utils";
 import type { PlatformStats } from "@/lib/data/stats";
 import type { MerchantListItem } from "@/lib/data/merchants";
 
@@ -60,32 +58,14 @@ function buildTips(merchants: MerchantListItem[], cities: string[]): string[] {
   return tips;
 }
 
-/** Replaces the category showcase when the platform has no merchants
- *  yet -- an inviting, on-brand slot rather than an empty grid column. */
-function FirstPartnerPanel() {
-  return (
-    <div className="glass-panel flex flex-col items-center gap-4 rounded-2xl px-8 py-10 text-center">
-      <Planni state="welcome" size={104} message="" />
-      <div className="space-y-1.5">
-        <p className="text-lg font-semibold tracking-tight text-balance">
-          Fii primul comerciant de pe Planno
-        </p>
-        <p className="max-w-xs text-sm leading-relaxed text-muted-foreground">
-          Platforma tocmai a pornit — primele afaceri listate ajung în fața clienților fără nicio
-          concurență pe pagina principală.
-        </p>
-      </div>
-      <Link href="/signup" className={buttonVariants({ size: "md" })}>
-        Listează-ți afacerea
-      </Link>
-    </div>
-  );
-}
-
 export function Hero({ merchants, cities, categories, stats, initialQuery, initialCity }: HeroProps) {
   const showcase = buildShowcase(merchants);
   const tips = buildTips(merchants, cities);
   const topCategories = categories.slice(0, 3).map(categoryLabel).join(", ").toLowerCase();
+  // With no merchants yet there's nothing to showcase on the right --
+  // the founding-partner pitch lives entirely in FounderLaunchSection
+  // below, so this column just narrows instead of duplicating it.
+  const hasShowcase = showcase.length > 0;
 
   return (
     <section className="relative isolate overflow-hidden border-b border-border/40">
@@ -98,7 +78,12 @@ export function Hero({ merchants, cities, categories, stats, initialQuery, initi
         <div className="absolute inset-0 hero-grid" />
       </div>
 
-      <div className="mx-auto grid max-w-6xl gap-12 px-6 pb-16 pt-14 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:gap-10 lg:pb-24 lg:pt-20">
+      <div
+        className={cn(
+          "mx-auto grid gap-12 px-6 pb-16 pt-14 lg:items-center lg:gap-10 lg:pb-24 lg:pt-20",
+          hasShowcase ? "max-w-6xl lg:grid-cols-[1.05fr_0.95fr]" : "max-w-2xl",
+        )}
+      >
         <div className="flex flex-col items-start gap-6">
           <span className="inline-flex items-center gap-2 rounded-full border border-border/50 bg-background/70 px-3 py-1 text-xs font-medium text-muted-foreground backdrop-blur">
             <span className="relative flex size-1.5">
@@ -146,18 +131,14 @@ export function Hero({ merchants, cities, categories, stats, initialQuery, initi
           </div>
         </div>
 
-        <div className="relative">
-          {showcase.length > 0 ? (
-            <>
-              <HeroShowcase categories={showcase} />
-              <div className="mt-6 hidden lg:flex">
-                <PlanniTip tips={tips} />
-              </div>
-            </>
-          ) : (
-            <FirstPartnerPanel />
-          )}
-        </div>
+        {hasShowcase && (
+          <div className="relative">
+            <HeroShowcase categories={showcase} />
+            <div className="mt-6 hidden lg:flex">
+              <PlanniTip tips={tips} />
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );
