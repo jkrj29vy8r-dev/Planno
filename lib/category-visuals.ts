@@ -18,16 +18,15 @@ export interface CategoryVisual {
   photo?: string;
 }
 
-// salon and barbershop below are Claude's picks, not user-supplied and
-// not verified from this sandbox (images.unsplash.com is blocked by
-// egress policy here) -- lower confidence than the other three. If
-// either doesn't actually read as its category once deployed, swap the
-// id and nothing else needs to change: a bad/dead URL already degrades
-// to the gradient + icon illustration below rather than a blank tile.
-const SALON_PHOTO = "https://images.unsplash.com/photo-1562322140-8baeececf3df?w=800&q=80&auto=format&fit=crop";
-const BARBERSHOP_PHOTO = "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=800&q=80&auto=format&fit=crop";
-const SPA_PHOTO = "https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=800&q=80&auto=format&fit=crop";
-const FITNESS_PHOTO = "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&q=80&auto=format&fit=crop";
+// User-supplied Unsplash URLs, kept verbatim. Still not verified from
+// this sandbox -- images.unsplash.com is blocked by egress policy here
+// -- but a bad/dead URL already degrades to the gradient + icon
+// illustration below rather than a blank tile (see hero-showcase.tsx).
+const BARBERSHOP_PHOTO = "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=1000&auto=format&fit=crop";
+const SALON_PHOTO = "https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=1000&auto=format&fit=crop";
+const SPA_PHOTO = "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?q=80&w=1000&auto=format&fit=crop";
+const FITNESS_PHOTO = "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1000&auto=format&fit=crop";
+const PADEL_PHOTO = "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?q=80&w=1000&auto=format&fit=crop";
 const AUTO_PHOTO = "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&q=80&auto=format&fit=crop";
 
 /** Shared between the hero showcase and merchant cards, so a category
@@ -41,7 +40,7 @@ export const CATEGORY_VISUALS: Record<string, CategoryVisual> = {
   spa: { icon: Flower2, from: "#3F6F5E", to: "#24443B", photo: SPA_PHOTO },
   fitness: { icon: Dumbbell, from: "#4A5568", to: "#252C38", photo: FITNESS_PHOTO },
   wellness: { icon: Flower2, from: "#5FA69E", to: "#2E6866" },
-  padel: { icon: Trophy, from: "#3D6B8A", to: "#1F3A4D" },
+  padel: { icon: Trophy, from: "#3D6B8A", to: "#1F3A4D", photo: PADEL_PHOTO },
   auto: { icon: Car, from: "#5A5245", to: "#332F28", photo: AUTO_PHOTO },
   transport: { icon: Truck, from: "#6B4E3D", to: "#3A2A21" },
   altele: { icon: Sparkles, from: "#59564F", to: "#302E2A" },

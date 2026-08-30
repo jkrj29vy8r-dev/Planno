@@ -18,11 +18,11 @@ interface HeroSearchProps {
 }
 
 const SEARCH_PLACEHOLDERS = [
-  "Caută un tuns în Roman...",
-  "Rezervă un masaj de relaxare...",
-  "Caută antrenor personal...",
-  "Rezervă teren de padel...",
-  "Găsește un salon de înfrumusețare...",
+  "Caută un tuns bărbați în Roman...",
+  "Rezervă o ședință de masaj de relaxare...",
+  "Caută antrenor personal de fitness...",
+  "Închiriază un teren de padel...",
+  "Găsește salon pentru manichiură...",
 ];
 
 const PLACEHOLDER_INTERVAL_MS = 3000;
@@ -84,7 +84,7 @@ export function HeroSearch({ cities, categories, initialQuery, initialCity }: He
                     animate={{ opacity: 1, filter: "blur(0px)" }}
                     exit={{ opacity: 0, filter: "blur(4px)" }}
                     transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-                    className="block truncate text-base text-muted-foreground/70 sm:text-sm"
+                    className="block truncate text-base text-muted-foreground/70 sm:text-[13px]"
                   >
                     {SEARCH_PLACEHOLDERS[placeholderIndex]}
                   </motion.span>
@@ -96,7 +96,7 @@ export function HeroSearch({ cities, categories, initialQuery, initialCity }: He
 
         <span aria-hidden="true" className="hidden h-8 w-px bg-border/60 sm:block" />
 
-        <label className="flex items-center gap-3 rounded-xl px-4 py-3 transition-colors focus-within:bg-muted/50 sm:w-52">
+        <label className="flex items-center gap-3 rounded-xl px-4 py-3 transition-colors focus-within:bg-muted/50 sm:w-48">
           <MapPin className="size-[18px] shrink-0 text-muted-foreground" aria-hidden="true" />
           <span className="sr-only">Oraș</span>
           <select

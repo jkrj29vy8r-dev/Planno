@@ -24,9 +24,9 @@ export function PlanniSpeechBubble() {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-            className="glass-panel whitespace-nowrap rounded-2xl px-3.5 py-2 text-sm font-medium text-foreground shadow-lg"
+            className="glass-panel w-[220px] shrink-0 rounded-2xl px-3.5 py-2 text-center text-sm font-medium text-foreground shadow-lg sm:w-64"
           >
-            Ce programăm azi?
+            Ai un salon sau o sală? Listează-te gratuit!
           </motion.div>
         )}
       </AnimatePresence>

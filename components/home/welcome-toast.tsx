@@ -3,8 +3,8 @@
 import * as React from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
-const SHOW_AFTER_MS = 400;
-const VISIBLE_MS = 4500;
+const SHOW_AFTER_MS = 500;
+const VISIBLE_MS = 4000;
 
 /**
  * A one-time greeting for the visit, not the theme -- deliberately dark
@@ -39,8 +39,8 @@ export function WelcomeToast() {
           >
             <span aria-hidden="true">👋</span>
             <span>
-              Platforma tocmai s-a deschis.{" "}
-              <span className="font-medium text-[#EC9A66]">Fii printre primii clienți!</span>
+              Planno s-a deschis în zona ta.{" "}
+              <span className="font-medium text-[#EC9A66]">Rezervă fără telefon!</span>
             </span>
           </motion.div>
         )}

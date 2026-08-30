@@ -48,7 +48,7 @@ export function HeroShowcase({ categories }: { categories: ShowcaseCategory[] })
             >
               <Link
                 href={`/?category=${category.id}#rezultate`}
-                className="group relative block aspect-[4/5] overflow-hidden rounded-2xl border border-white/10 shadow-lg shadow-black/10 transition-[transform,border-color] duration-300 ease-[var(--ease-premium)] hover:-translate-y-1 hover:border-white/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                className="group relative block aspect-[4/5] overflow-hidden rounded-2xl border border-white/10 shadow-2xl transition-[transform,border-color] duration-300 ease-[var(--ease-premium)] hover:-translate-y-1 hover:border-orange-500/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
               >
                 {visual.photo ? (
                   <>
@@ -81,9 +81,7 @@ export function HeroShowcase({ categories }: { categories: ShowcaseCategory[] })
                 <div
                   className={cn(
                     "absolute inset-0 bg-gradient-to-t",
-                    visual.photo
-                      ? "from-black/80 via-black/45 to-black/20"
-                      : "from-black/70 via-black/5 to-transparent",
+                    visual.photo ? "from-black/90 to-black/20" : "from-black/70 via-black/5 to-transparent",
                   )}
                 />
 

@@ -56,7 +56,7 @@ export function FounderLaunchSection() {
         />
 
         <div className="relative z-10 mx-auto flex max-w-xl flex-col items-center gap-5 text-center">
-          <div className="relative">
+          <div className="relative mt-6">
             <Planni state="welcome" size={92} message="" />
             <PlanniSpeechBubble />
           </div>

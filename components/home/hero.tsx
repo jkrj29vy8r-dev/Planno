@@ -4,7 +4,6 @@ import { HeroShowcase, type ShowcaseCategory } from "@/components/home/hero-show
 import { PlanniTip } from "@/components/home/planni-tip";
 import { TrustRow } from "@/components/home/trust-row";
 import { WelcomeToast } from "@/components/home/welcome-toast";
-import { categoryLabel } from "@/lib/categories";
 import type { PlatformStats } from "@/lib/data/stats";
 import type { MerchantListItem } from "@/lib/data/merchants";
 
@@ -63,7 +62,6 @@ function buildTips(merchants: MerchantListItem[], cities: string[]): string[] {
 export function Hero({ merchants, cities, categories, stats, initialQuery, initialCity }: HeroProps) {
   const showcase = buildShowcase(merchants);
   const tips = buildTips(merchants, cities);
-  const topCategories = categories.slice(0, 3).map(categoryLabel).join(", ").toLowerCase();
   const hasShowcase = showcase.length > 0;
 
   return (
@@ -85,7 +83,7 @@ export function Hero({ merchants, cities, categories, stats, initialQuery, initi
           <Zap className="size-3.5 text-accent" aria-hidden="true" />
           {stats.bookingsLast30Days > 0
             ? `${stats.bookingsLast30Days} rezervări în ultimele 30 de zile`
-            : "Rezervări online, în timp real în România"}
+            : "Platformă de rezervări online în timp real"}
         </span>
 
         <h1 className="mt-6 max-w-2xl text-[2.75rem] font-semibold leading-[1.05] tracking-tight text-balance sm:text-6xl lg:text-[4rem]">
@@ -94,11 +92,8 @@ export function Hero({ merchants, cities, categories, stats, initialQuery, initi
         </h1>
 
         <p className="mt-5 max-w-lg text-[15px] leading-relaxed text-muted-foreground sm:text-base">
-          {topCategories
-            ? `Descoperă ${topCategories} și multe altele din orașul tău.`
-            : "Descoperă afaceri locale din orașul tău."}{" "}
-          Vezi orele libere în timp real și confirmă pe loc — comerciantul primește rezervarea
-          instant.
+          Descoperă specialiști și afaceri locale din orașul tău. Vezi orarul în timp real și
+          rezervi pe loc în mai puțin de 30 de secunde.
         </p>
 
         <div className="mt-9 w-full">
@@ -130,8 +125,8 @@ export function Hero({ merchants, cities, categories, stats, initialQuery, initi
 
       {hasShowcase && (
         <div className="mx-auto max-w-5xl px-6 pb-20 lg:pb-28">
-          <h2 className="mb-6 text-xl font-semibold tracking-tight text-balance sm:text-2xl">
-            Categorii populare
+          <h2 className="mb-6 text-xl font-bold tracking-tight text-balance sm:text-2xl">
+            Ce vrei să programezi azi?
           </h2>
           <HeroShowcase categories={showcase} />
           <TrustRow
