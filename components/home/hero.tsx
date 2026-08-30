@@ -127,9 +127,9 @@ export function Hero({ merchants, cities, categories, stats, initialQuery, initi
 
       {hasShowcase && (
         <div className="mx-auto max-w-5xl px-6 pb-20 lg:pb-28">
-          <p className="mb-5 text-center text-sm font-medium text-muted-foreground">
-            Populare acum
-          </p>
+          <h2 className="mb-6 text-xl font-semibold tracking-tight text-balance sm:text-2xl">
+            Categorii populare
+          </h2>
           <HeroShowcase categories={showcase} />
           <TrustRow
             names={merchants.map((m) => m.business_name)}

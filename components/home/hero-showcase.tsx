@@ -1,9 +1,11 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { MotionConfig, motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { categoryLabel } from "@/lib/categories";
+import { categoryVisual } from "@/lib/category-visuals";
 import { CategoryIllustration } from "@/components/category-illustration";
 
 export interface ShowcaseCategory {
@@ -24,7 +26,10 @@ export function HeroShowcase({ categories }: { categories: ShowcaseCategory[] })
   return (
     <MotionConfig reducedMotion="user">
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
-        {categories.slice(0, 4).map((category, index) => (
+        {categories.slice(0, 4).map((category, index) => {
+          const visual = categoryVisual(category.id);
+
+          return (
           <motion.div
             key={category.id}
             initial={{ opacity: 0, y: 24 }}
@@ -43,15 +48,44 @@ export function HeroShowcase({ categories }: { categories: ShowcaseCategory[] })
             >
               <Link
                 href={`/?category=${category.id}#rezultate`}
-                className="group relative block aspect-[4/5] overflow-hidden rounded-2xl border border-white/10 shadow-lg shadow-black/10 transition-transform duration-300 ease-[var(--ease-premium)] hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                className="group relative block aspect-[4/5] overflow-hidden rounded-2xl border border-white/10 shadow-lg shadow-black/10 transition-[transform,border-color] duration-300 ease-[var(--ease-premium)] hover:-translate-y-1 hover:border-white/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
               >
-                <CategoryIllustration
-                  category={category.id}
-                  className="transition-transform duration-500 group-hover:scale-105"
-                />
+                {visual.photo ? (
+                  <>
+                    {/* Same two-tone gradient CategoryIllustration draws
+                        with -- the photo's loading/failure backdrop, so
+                        a slow or dead URL degrades to a designed tile
+                        instead of a blank box. */}
+                    <div
+                      aria-hidden="true"
+                      className="absolute inset-0"
+                      style={{ background: `linear-gradient(155deg, ${visual.from}, ${visual.to})` }}
+                    />
+                    <Image
+                      src={visual.photo}
+                      alt=""
+                      fill
+                      sizes="(min-width: 640px) 22vw, 45vw"
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                  </>
+                ) : (
+                  <CategoryIllustration
+                    category={category.id}
+                    className="transition-transform duration-500 group-hover:scale-105"
+                  />
+                )}
 
-                {/* Readability floor for the label over the illustration. */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/5 to-transparent" />
+                {/* Dark tint so a real photo still reads as dark-mode
+                    surface, plus a readability floor for the label. */}
+                <div
+                  className={cn(
+                    "absolute inset-0 bg-gradient-to-t",
+                    visual.photo
+                      ? "from-black/80 via-black/45 to-black/20"
+                      : "from-black/70 via-black/5 to-transparent",
+                  )}
+                />
 
                 <div className="absolute inset-x-0 bottom-0 p-4">
                   <p className="text-[15px] font-semibold tracking-tight text-white">
@@ -66,7 +100,8 @@ export function HeroShowcase({ categories }: { categories: ShowcaseCategory[] })
               </Link>
             </motion.div>
           </motion.div>
-        ))}
+          );
+        })}
       </div>
     </MotionConfig>
   );
