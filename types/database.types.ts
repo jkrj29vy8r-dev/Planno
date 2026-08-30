@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.17"
+    PostgrestVersion: "14.5"
   }
   public: {
     Tables: {
@@ -210,6 +210,61 @@ export type Database = {
         }
         Relationships: []
       }
+      reviews: {
+        Row: {
+          booking_id: string
+          client_id: string
+          comment: string | null
+          created_at: string
+          id: string
+          merchant_id: string
+          rating: number
+          updated_at: string
+        }
+        Insert: {
+          booking_id: string
+          client_id: string
+          comment?: string | null
+          created_at?: string
+          id?: string
+          merchant_id: string
+          rating: number
+          updated_at?: string
+        }
+        Update: {
+          booking_id?: string
+          client_id?: string
+          comment?: string | null
+          created_at?: string
+          id?: string
+          merchant_id?: string
+          rating?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: true
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_merchant_id_fkey"
+            columns: ["merchant_id"]
+            isOneToOne: false
+            referencedRelation: "merchants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       services: {
         Row: {
           created_at: string
@@ -338,6 +393,12 @@ export type Database = {
           stripe_subscription_id: string | null
           updated_at: string
         }
+        SetofOptions: {
+          from: "*"
+          to: "subscriptions"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       has_role: {
         Args: { target_role: Database["public"]["Enums"]["user_role"] }
@@ -377,6 +438,12 @@ export type Database = {
           status: Database["public"]["Enums"]["booking_status"]
           updated_at: string
         }
+        SetofOptions: {
+          from: "*"
+          to: "bookings"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       set_subscription_cancel_at_period_end: {
         Args: { p_cancel: boolean; p_merchant_id: string }
@@ -395,10 +462,26 @@ export type Database = {
           stripe_subscription_id: string | null
           updated_at: string
         }
+        SetofOptions: {
+          from: "*"
+          to: "subscriptions"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      subscription_grace_period: { Args: never; Returns: string }
+      subscription_plan_duration: {
+        Args: { p_plan: Database["public"]["Enums"]["subscription_plan"] }
+        Returns: string
       }
     }
     Enums: {
-      booking_status: "pending" | "confirmed" | "cancelled" | "completed" | "no_show"
+      booking_status:
+        | "pending"
+        | "confirmed"
+        | "cancelled"
+        | "completed"
+        | "no_show"
       subscription_plan: "monthly" | "quarterly" | "annual"
       subscription_status:
         | "trialing"
@@ -534,7 +617,13 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      booking_status: ["pending", "confirmed", "cancelled", "completed", "no_show"],
+      booking_status: [
+        "pending",
+        "confirmed",
+        "cancelled",
+        "completed",
+        "no_show",
+      ],
       subscription_plan: ["monthly", "quarterly", "annual"],
       subscription_status: [
         "trialing",

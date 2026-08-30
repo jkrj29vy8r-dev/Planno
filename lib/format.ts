@@ -58,6 +58,16 @@ export function formatRelativeToNow(date: Date): string {
   return rtf.format(diffDays, "day");
 }
 
+/** "Ion Popescu" -> "Ion P." -- public review display shows a client's
+ *  first name and last-initial only, never their full name (reviews are
+ *  visible to any visitor, including anonymous ones). */
+export function reviewerDisplayName(fullName: string): string {
+  const parts = fullName.trim().split(/\s+/).filter(Boolean);
+  if (parts.length <= 1) return parts[0] ?? fullName;
+  const lastInitial = parts[parts.length - 1][0]?.toUpperCase();
+  return lastInitial ? `${parts[0]} ${lastInitial}.` : parts[0];
+}
+
 const STATUS_LABELS: Record<string, string> = {
   pending: "În așteptare",
   confirmed: "Confirmată",

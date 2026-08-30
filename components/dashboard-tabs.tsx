@@ -11,9 +11,10 @@ import type { BookingWithDetails } from "@/lib/data/bookings";
 interface DashboardTabsProps {
   upcoming: BookingWithDetails[];
   history: BookingWithDetails[];
+  reviewedBookingIds: Set<string>;
 }
 
-export function DashboardTabs({ upcoming, history }: DashboardTabsProps) {
+export function DashboardTabs({ upcoming, history, reviewedBookingIds }: DashboardTabsProps) {
   const [tab, setTab] = React.useState<"upcoming" | "history">("upcoming");
   const items = tab === "upcoming" ? upcoming : history;
 
@@ -50,7 +51,12 @@ export function DashboardTabs({ upcoming, history }: DashboardTabsProps) {
       ) : (
         <div className="space-y-3">
           {items.map((booking) => (
-            <BookingCard key={booking.id} booking={booking} isUpcoming={tab === "upcoming"} />
+            <BookingCard
+              key={booking.id}
+              booking={booking}
+              isUpcoming={tab === "upcoming"}
+              hasReview={reviewedBookingIds.has(booking.id)}
+            />
           ))}
         </div>
       )}

@@ -1,13 +1,16 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { MapPin } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
-import { BookingPanel } from "@/components/booking-panel";
-import { Planni } from "@/components/planni";
-import { getMerchantBySlug } from "@/lib/data/merchants";
+import { BottomNav } from "@/components/bottom-nav";
+import { MerchantProfileHero } from "@/components/merchant-profile-hero";
+import { MerchantProfileHeader } from "@/components/merchant-profile-header";
+import { MerchantProfileTabs } from "@/components/merchant-profile-tabs";
+import { getMerchantBySlug, type MerchantDetail } from "@/lib/data/merchants";
 import { getCurrentProfile } from "@/lib/data/auth";
 import { merchantAcceptsBookings } from "@/lib/data/subscription";
-import { categoryLabel } from "@/lib/categories";
+import { getMerchantReviewSummary, type ReviewSummary } from "@/lib/data/reviews";
+import { cn } from "@/lib/utils";
+import type { Tables } from "@/types/database.types";
 
 interface MerchantPageProps {
   params: Promise<{ slug: string }>;
@@ -21,64 +24,63 @@ export async function generateMetadata({ params }: MerchantPageProps): Promise<M
 
 export default async function MerchantPage({ params }: MerchantPageProps) {
   const { slug } = await params;
-  const [merchant, profile] = await Promise.all([getMerchantBySlug(slug), getCurrentProfile()]);
 
-  if (!merchant) notFound();
+  console.log("[Profil Comerciant] Fetching data...", { id: slug });
+
+  let merchant: MerchantDetail | null;
+  let profile: Tables<"profiles"> | null;
+  try {
+    [merchant, profile] = await Promise.all([getMerchantBySlug(slug), getCurrentProfile()]);
+  } catch (error) {
+    console.error("[Profil Comerciant] Failed to fetch merchant", { id: slug, error });
+    throw error;
+  }
+
+  if (!merchant) {
+    console.warn("[Profil Comerciant] No merchant found for slug", { id: slug });
+    notFound();
+  }
 
   const activeServices = merchant.services.filter((service) => service.is_active);
-  // Mirrors the RLS check -- a lapsed merchant's booking insert would be
-  // rejected anyway, so the panel is hidden rather than failing on submit.
-  const acceptsBookings = await merchantAcceptsBookings(merchant.id);
+
+  let acceptsBookings: boolean;
+  let reviewSummary: ReviewSummary;
+  try {
+    // Mirrors the RLS check -- a lapsed merchant's booking insert would
+    // be rejected anyway, so the panel is hidden rather than failing on
+    // submit.
+    [acceptsBookings, reviewSummary] = await Promise.all([
+      merchantAcceptsBookings(merchant.id),
+      getMerchantReviewSummary(merchant.id),
+    ]);
+  } catch (error) {
+    console.error("[Profil Comerciant] Failed to fetch booking/review state", { id: merchant.id, error });
+    throw error;
+  }
+
+  // The mobile sticky booking CTA (in MerchantProfileTabs) stacks on top
+  // of BottomNav, not beside it -- when both are showing, the page needs
+  // room for both fixed bars or the last bit of scrolled content (e.g.
+  // the last review) ends up hidden behind them.
+  const canBook = acceptsBookings && activeServices.length > 0;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className={cn("min-h-screen bg-background lg:pb-0", canBook ? "pb-36" : "pb-16")}>
       <SiteHeader />
+      <MerchantProfileHero merchant={merchant} />
 
-      <main className="mx-auto max-w-5xl px-6 py-12">
-        <div className="mb-10 flex flex-col gap-2">
-          <span className="w-fit rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
-            {categoryLabel(merchant.category)}
-          </span>
-          <h1 className="text-3xl font-semibold tracking-tight">{merchant.business_name}</h1>
-          {merchant.city && (
-            <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
-              <MapPin className="size-4" />
-              {merchant.address ? `${merchant.address}, ` : ""}
-              {merchant.city}
-            </span>
-          )}
-          {merchant.description && (
-            <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-muted-foreground">
-              {merchant.description}
-            </p>
-          )}
-        </div>
-
-        {!acceptsBookings ? (
-          <div className="flex flex-col items-center gap-4 rounded-xl border border-border/40 bg-card py-16 text-center">
-            <Planni state="empty-state" size={128} message="" />
-            <div className="space-y-1">
-              <p className="text-sm font-medium">Rezervările sunt momentan indisponibile</p>
-              <p className="mx-auto max-w-sm text-sm text-muted-foreground">
-                {merchant.business_name} nu preia rezervări online în această perioadă. Încearcă din
-                nou mai târziu sau contactează direct comerciantul.
-              </p>
-            </div>
-          </div>
-        ) : activeServices.length === 0 ? (
-          <div className="flex flex-col items-center gap-4 rounded-xl border border-border/40 bg-card py-16 text-center">
-            <Planni state="empty-state" size={128} message="" />
-            <div>
-              <p className="text-sm font-medium">Niciun serviciu disponibil momentan</p>
-              <p className="text-sm text-muted-foreground">
-                Acest comerciant nu are servicii active de rezervat.
-              </p>
-            </div>
-          </div>
-        ) : (
-          <BookingPanel merchant={merchant} services={activeServices} isAuthenticated={Boolean(profile)} />
-        )}
+      <main className="mx-auto max-w-5xl px-6">
+        <MerchantProfileHeader merchant={merchant} />
+        <MerchantProfileTabs
+          merchant={merchant}
+          services={activeServices}
+          isAuthenticated={Boolean(profile)}
+          acceptsBookings={acceptsBookings}
+          reviewSummary={reviewSummary}
+        />
       </main>
+
+      <BottomNav isAuthenticated={Boolean(profile)} />
     </div>
   );
 }

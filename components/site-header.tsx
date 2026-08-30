@@ -4,6 +4,7 @@ import { getRecentNotifications } from "@/lib/data/bookings";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { AccountMenu } from "@/components/account-menu";
 import { NotificationsMenu } from "@/components/notifications-menu";
+import { DesktopNavLinks } from "@/components/desktop-nav-links";
 import { buttonVariants } from "@/lib/button-variants";
 import { cn } from "@/lib/utils";
 
@@ -17,6 +18,8 @@ export async function SiteHeader() {
         <Link href="/" className="text-[15px] font-semibold tracking-tight">
           Planno
         </Link>
+
+        <DesktopNavLinks isAuthenticated={Boolean(profile)} />
 
         <div className="flex items-center gap-2">
           <ThemeToggle />

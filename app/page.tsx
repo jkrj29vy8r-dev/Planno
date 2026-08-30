@@ -1,10 +1,12 @@
 import { Suspense } from "react";
 import { SiteHeader } from "@/components/site-header";
+import { BottomNav } from "@/components/bottom-nav";
 import { Hero } from "@/components/home/hero";
 import { FounderLaunchSection } from "@/components/home/founder-launch-section";
 import { MerchantSearch } from "@/components/merchant-search";
 import { MerchantCard } from "@/components/merchant-card";
 import { Planni } from "@/components/planni";
+import { getCurrentProfile } from "@/lib/data/auth";
 import { getMerchantFilterOptions, searchMerchants } from "@/lib/data/merchants";
 import { getPlatformStats } from "@/lib/data/stats";
 
@@ -14,13 +16,14 @@ interface DiscoverPageProps {
 
 export default async function DiscoverPage({ searchParams }: DiscoverPageProps) {
   const params = await searchParams;
-  const [merchants, filterOptions, stats, allMerchants] = await Promise.all([
+  const [merchants, filterOptions, stats, allMerchants, profile] = await Promise.all([
     searchMerchants({ query: params.q, category: params.category, city: params.city }),
     getMerchantFilterOptions(),
     getPlatformStats(),
     // The hero showcases the whole catalogue regardless of the filters
     // applied to the results below it, so it never empties out mid-search.
     searchMerchants(),
+    getCurrentProfile(),
   ]);
 
   const hasActiveFilters = Boolean(params.q || params.category || params.city);
@@ -30,7 +33,7 @@ export default async function DiscoverPage({ searchParams }: DiscoverPageProps) 
   const platformIsEmpty = allMerchants.length === 0;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-16 lg:pb-0">
       <SiteHeader />
 
       <Hero
@@ -87,6 +90,7 @@ export default async function DiscoverPage({ searchParams }: DiscoverPageProps) 
           </>
         )}
       </main>
+      <BottomNav isAuthenticated={Boolean(profile)} />
     </div>
   );
 }

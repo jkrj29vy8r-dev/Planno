@@ -118,7 +118,7 @@ export function BookingPanel({ merchant, services, isAuthenticated }: BookingPan
               type="button"
               onClick={() => handleSelectService(service)}
               className={cn(
-                "flex w-full items-center justify-between gap-4 rounded-xl border bg-card px-5 py-4 text-left transition-colors",
+                "group flex w-full items-center justify-between gap-4 rounded-xl border bg-card px-5 py-4 text-left transition-colors",
                 isSelected ? "border-accent ring-2 ring-ring" : "border-border/40 hover:border-border",
               )}
             >
@@ -133,16 +133,17 @@ export function BookingPanel({ merchant, services, isAuthenticated }: BookingPan
                 </p>
               </div>
               <div className="flex shrink-0 items-center gap-3">
-                <span className="font-mono text-sm font-medium">
-                  {formatPrice(service.price, service.currency)}
-                </span>
+                <span className="text-sm font-semibold">{formatPrice(service.price, service.currency)}</span>
                 <span
                   className={cn(
-                    "flex size-5 items-center justify-center rounded-full border",
-                    isSelected ? "border-accent bg-accent text-accent-foreground" : "border-border",
+                    "flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors",
+                    isSelected
+                      ? "bg-accent text-accent-foreground"
+                      : "bg-muted text-foreground group-hover:bg-accent/10",
                   )}
                 >
-                  {isSelected && <Check className="size-3" />}
+                  {isSelected && <Check className="size-3.5" />}
+                  {isSelected ? "Selectat" : "Rezervă"}
                 </span>
               </div>
             </button>
