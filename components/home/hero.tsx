@@ -3,6 +3,7 @@ import { HeroSearch } from "@/components/home/hero-search";
 import { HeroShowcase, type ShowcaseCategory } from "@/components/home/hero-showcase";
 import { PlanniTip } from "@/components/home/planni-tip";
 import { TrustRow } from "@/components/home/trust-row";
+import { WelcomeToast } from "@/components/home/welcome-toast";
 import { categoryLabel } from "@/lib/categories";
 import type { PlatformStats } from "@/lib/data/stats";
 import type { MerchantListItem } from "@/lib/data/merchants";
@@ -67,6 +68,8 @@ export function Hero({ merchants, cities, categories, stats, initialQuery, initi
 
   return (
     <section className="relative isolate overflow-hidden border-b border-border/40">
+      <WelcomeToast />
+
       {/* Layered depth: a spotlight centered behind the search island,
           a hairline grid for texture, and two faint corner washes --
           all quiet enough to never fight the foreground for contrast. */}
@@ -98,7 +101,7 @@ export function Hero({ merchants, cities, categories, stats, initialQuery, initi
           instant.
         </p>
 
-        <div className="mt-9 w-full max-w-2xl">
+        <div className="mt-9 w-full">
           <HeroSearch
             cities={cities}
             categories={categories}

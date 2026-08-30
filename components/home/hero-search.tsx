@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { AnimatePresence, motion } from "framer-motion";
 import { ArrowRight, MapPin, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -16,11 +17,30 @@ interface HeroSearchProps {
   initialCity?: string;
 }
 
+const SEARCH_PLACEHOLDERS = [
+  "Caută un tuns în Roman...",
+  "Rezervă un masaj de relaxare...",
+  "Caută antrenor personal...",
+  "Rezervă teren de padel...",
+  "Găsește un salon de înfrumusețare...",
+];
+
+const PLACEHOLDER_INTERVAL_MS = 3000;
+
 export function HeroSearch({ cities, categories, initialQuery, initialCity }: HeroSearchProps) {
   const router = useRouter();
   const [query, setQuery] = React.useState(initialQuery ?? "");
   const [city, setCity] = React.useState(initialCity ?? "");
   const [isPending, startTransition] = React.useTransition();
+  const [placeholderIndex, setPlaceholderIndex] = React.useState(0);
+
+  React.useEffect(() => {
+    const timer = setInterval(
+      () => setPlaceholderIndex((i) => (i + 1) % SEARCH_PLACEHOLDERS.length),
+      PLACEHOLDER_INTERVAL_MS,
+    );
+    return () => clearInterval(timer);
+  }, []);
 
   function pushSearch(next: { q?: string; city?: string; category?: string }) {
     const params = new URLSearchParams();
@@ -49,12 +69,29 @@ export function HeroSearch({ cities, categories, initialQuery, initialCity }: He
         <label className="flex min-w-0 flex-1 items-center gap-3 rounded-xl px-4 py-3 transition-colors focus-within:bg-muted/50">
           <Search className="size-[18px] shrink-0 text-muted-foreground" aria-hidden="true" />
           <span className="sr-only">Ce serviciu cauți?</span>
-          <input
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Tuns, masaj, antrenament personal..."
-            className="min-w-0 flex-1 bg-transparent text-base text-foreground outline-none placeholder:text-muted-foreground/70"
-          />
+          <div className="relative min-w-0 flex-1">
+            <input
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              className="w-full min-w-0 bg-transparent text-base text-foreground outline-none"
+            />
+            {query.length === 0 && (
+              <div className="pointer-events-none absolute inset-0 flex items-center overflow-hidden">
+                <AnimatePresence mode="wait">
+                  <motion.span
+                    key={placeholderIndex}
+                    initial={{ opacity: 0, filter: "blur(4px)" }}
+                    animate={{ opacity: 1, filter: "blur(0px)" }}
+                    exit={{ opacity: 0, filter: "blur(4px)" }}
+                    transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+                    className="block truncate text-base text-muted-foreground/70 sm:text-sm"
+                  >
+                    {SEARCH_PLACEHOLDERS[placeholderIndex]}
+                  </motion.span>
+                </AnimatePresence>
+              </div>
+            )}
+          </div>
         </label>
 
         <span aria-hidden="true" className="hidden h-8 w-px bg-border/60 sm:block" />

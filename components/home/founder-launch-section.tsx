@@ -2,6 +2,7 @@ import Link from "next/link";
 import { CalendarClock, Check, MapPin, ShieldCheck, Sparkles, Zap, type LucideIcon } from "lucide-react";
 import { CategoryIllustration } from "@/components/category-illustration";
 import { Planni } from "@/components/planni";
+import { PlanniSpeechBubble } from "@/components/home/planni-speech-bubble";
 import { buttonVariants } from "@/lib/button-variants";
 import { cn } from "@/lib/utils";
 
@@ -55,7 +56,10 @@ export function FounderLaunchSection() {
         />
 
         <div className="relative z-10 mx-auto flex max-w-xl flex-col items-center gap-5 text-center">
-          <Planni state="welcome" size={92} message="" />
+          <div className="relative">
+            <Planni state="welcome" size={92} message="" />
+            <PlanniSpeechBubble />
+          </div>
 
           <span className="inline-flex items-center gap-1.5 rounded-full border border-accent/30 bg-accent/10 px-3 py-1 text-xs font-semibold tracking-wide text-accent uppercase">
             <Sparkles className="size-3.5" aria-hidden="true" />
