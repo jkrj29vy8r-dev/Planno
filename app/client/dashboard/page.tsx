@@ -27,7 +27,7 @@ export default async function ClientDashboardPage() {
       <main className="mx-auto max-w-4xl px-6 py-12">
         <div className="mb-8">
           <h1 className="text-3xl font-semibold tracking-tight">
-            Bună, {profile.full_name.split(" ")[0]}
+            Bună, {profile.full_name.trim().split(/\s+/)[0] || profile.full_name}
           </h1>
           <p className="text-muted-foreground">Gestionează-ți rezervările și istoricul.</p>
         </div>

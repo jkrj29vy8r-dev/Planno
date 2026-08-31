@@ -26,13 +26,27 @@ export function navItems(isAuthenticated: boolean) {
   ];
 }
 
-/** Shared with DesktopNavLinks. usePathname() never reports the hash, so
- *  an in-page anchor like "/#rezultate" is indistinguishable from "/"
- *  and must never claim the active state -- otherwise it and the real
- *  "/" item (Acasă) would both light up together on the home page. */
+/**
+ * Shared with DesktopNavLinks. Two things a naive comparison gets
+ * wrong, both of which used to light up two items at once:
+ *
+ * - usePathname() never reports the hash, so an in-page anchor like
+ *   "/#rezultate" is indistinguishable from "/" and must never claim
+ *   the active state -- otherwise it and the real "/" item (Acasă)
+ *   would both light up together on the home page.
+ * - When logged out, "Programări" and "Cont" both route through
+ *   /login ("/login?redirect=/client/dashboard" and "/login"). Matching
+ *   on the pathname alone (stripping the query) made both resolve to
+ *   the same /login and light up together on the login page. Comparing
+ *   the full href instead fixes this correctly rather than
+ *   coincidentally: /login *is* Cont's real unauthenticated
+ *   destination, but it's merely a waypoint for Programări, whose own
+ *   href is the longer redirect string -- so only Cont should ever
+ *   claim it.
+ */
 export function isNavItemActive(pathname: string, href: string): boolean {
   if (href.includes("#")) return false;
-  return pathname === href.split("?")[0];
+  return pathname === href;
 }
 
 /**
