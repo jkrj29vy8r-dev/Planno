@@ -18,7 +18,7 @@ export default async function AccountPage() {
   if (!profile) redirect("/login?redirect=/account");
 
   return (
-    <div className="min-h-screen bg-background pb-24 lg:pb-12">
+    <div className="min-h-screen bg-background pb-24 md:pb-12">
       <SiteHeader />
       <main className="mx-auto max-w-lg px-6 py-12">
         <div className="mb-8 flex items-center gap-4">

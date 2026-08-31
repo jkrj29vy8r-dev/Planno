@@ -22,7 +22,7 @@ export default async function ClientDashboardPage() {
   ]);
 
   return (
-    <div className="min-h-screen bg-background pb-16 lg:pb-0">
+    <div className="min-h-screen bg-background pb-24 md:pb-0">
       <SiteHeader />
       <main className="mx-auto max-w-4xl px-6 py-12">
         <div className="mb-8">

@@ -95,7 +95,7 @@ export function MerchantProfileTabs({
           from the moment the page loads regardless of tab or scroll
           position, sitting just above BottomNav. */}
       {canBook && (
-        <div className="fixed inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] z-30 border-t border-border/40 bg-background/95 px-4 py-3 shadow-[0_-4px_16px_rgba(0,0,0,0.06)] backdrop-blur-lg lg:hidden">
+        <div className="fixed inset-x-0 bottom-[calc(4.9375rem+env(safe-area-inset-bottom))] z-30 border-t border-border/40 bg-background/95 px-4 py-3 shadow-[0_-4px_16px_rgba(0,0,0,0.06)] backdrop-blur-lg md:hidden">
           <div className="mx-auto flex max-w-md items-center justify-between gap-4">
             <div className="min-w-0">
               {fromPrice !== null && (

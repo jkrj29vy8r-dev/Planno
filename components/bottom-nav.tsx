@@ -26,12 +26,23 @@ export function navItems(isAuthenticated: boolean) {
   ];
 }
 
+/** Shared with DesktopNavLinks. usePathname() never reports the hash, so
+ *  an in-page anchor like "/#rezultate" is indistinguishable from "/"
+ *  and must never claim the active state -- otherwise it and the real
+ *  "/" item (Acasă) would both light up together on the home page. */
+export function isNavItemActive(pathname: string, href: string): boolean {
+  if (href.includes("#")) return false;
+  return pathname === href.split("?")[0];
+}
+
 /**
- * Mobile-only (lg:hidden) fixed bottom bar -- the desktop equivalent is
- * the same 4 destinations added to SiteHeader's top navbar. Deliberately
- * dark chrome regardless of the site's own light/dark theme, matching
- * WelcomeToast's reasoning: a persistent native-app tab bar reads as one
- * fixed piece of chrome, not page content that should flip with theme.
+ * Mobile-only (md:hidden) floating pill -- the desktop equivalent is
+ * the same 4 destinations added to SiteHeader's top navbar at md: and up
+ * (DesktopNavLinks), so the two stay complementary with no gap where
+ * neither shows. Deliberately dark chrome regardless of the site's own
+ * light/dark theme, matching WelcomeToast's reasoning: a persistent
+ * native-app tab bar reads as one fixed piece of chrome, not page
+ * content that should flip with theme.
  */
 export function BottomNav({ isAuthenticated }: BottomNavProps) {
   const pathname = usePathname();
@@ -44,24 +55,26 @@ export function BottomNav({ isAuthenticated }: BottomNavProps) {
   return (
     <nav
       aria-label="Navigare principală"
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-black/80 backdrop-blur-md lg:hidden"
+      className="fixed inset-x-0 z-40 flex justify-center px-4 md:hidden"
+      style={{ bottom: "calc(1rem + env(safe-area-inset-bottom))" }}
     >
-      <div className="mx-auto flex max-w-md items-center justify-around px-2 pb-[env(safe-area-inset-bottom)]">
+      <div className="flex w-full max-w-sm items-center justify-around rounded-full border border-white/10 bg-zinc-900/85 p-2 shadow-2xl backdrop-blur-lg">
         {items.map((item) => {
-          const isActive = pathname === item.href.split("#")[0].split("?")[0];
+          const isActive = isNavItemActive(pathname, item.href);
           const Icon = item.icon;
           return (
             <Link
               key={item.id}
               href={item.href}
               className={cn(
-                "flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium transition-colors",
-                isActive ? "text-accent" : "text-white/60 hover:text-white/85",
+                "flex flex-col items-center justify-center rounded-full px-3 py-1 transition-all duration-200",
+                isActive ? "text-orange-500" : "text-zinc-400 hover:text-white",
               )}
               aria-current={isActive ? "page" : undefined}
             >
-              <Icon className="size-5" strokeWidth={isActive ? 2.25 : 1.8} aria-hidden="true" />
-              {item.label}
+              <Icon className="mb-0.5 size-5" aria-hidden="true" />
+              <span className="text-[10px] font-medium">{item.label}</span>
+              {isActive && <span className="mt-0.5 size-1 rounded-full bg-orange-500" aria-hidden="true" />}
             </Link>
           );
         })}

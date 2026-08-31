@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { navItems } from "@/components/bottom-nav";
+import { isNavItemActive, navItems } from "@/components/bottom-nav";
 import { cn } from "@/lib/utils";
 
 /** Desktop's "transformed" presentation of the same navigation as
@@ -12,9 +12,9 @@ export function DesktopNavLinks({ isAuthenticated }: { isAuthenticated: boolean 
   const pathname = usePathname();
 
   return (
-    <nav aria-label="Navigare principală" className="hidden items-center gap-1 lg:flex">
+    <nav aria-label="Navigare principală" className="hidden items-center gap-1 md:flex">
       {navItems(isAuthenticated).map((item) => {
-        const isActive = pathname === item.href.split("#")[0].split("?")[0];
+        const isActive = isNavItemActive(pathname, item.href);
         return (
           <Link
             key={item.id}

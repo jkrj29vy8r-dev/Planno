@@ -65,7 +65,7 @@ export default async function MerchantPage({ params }: MerchantPageProps) {
   const canBook = acceptsBookings && activeServices.length > 0;
 
   return (
-    <div className={cn("min-h-screen bg-background lg:pb-0", canBook ? "pb-36" : "pb-16")}>
+    <div className={cn("min-h-screen bg-background md:pb-0", canBook ? "pb-40" : "pb-24")}>
       <SiteHeader />
       <MerchantProfileHero merchant={merchant} />
 
