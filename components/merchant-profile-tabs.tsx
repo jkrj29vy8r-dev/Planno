@@ -18,7 +18,7 @@ type TabId = "servicii" | "recenzii" | "despre";
 interface MerchantProfileTabsProps {
   merchant: MerchantDetail;
   services: Service[];
-  isAuthenticated: boolean;
+  profile: Tables<"profiles"> | null;
   acceptsBookings: boolean;
   reviewSummary: ReviewSummaryData;
 }
@@ -37,7 +37,7 @@ const DAY_LABELS: Record<(typeof DAY_ORDER)[number], string> = {
 export function MerchantProfileTabs({
   merchant,
   services,
-  isAuthenticated,
+  profile,
   acceptsBookings,
   reviewSummary,
 }: MerchantProfileTabsProps) {
@@ -66,7 +66,7 @@ export function MerchantProfileTabs({
 
       {tab === "servicii" &&
         (canBook ? (
-          <BookingPanel merchant={merchant} services={services} isAuthenticated={isAuthenticated} />
+          <BookingPanel merchant={merchant} services={services} profile={profile} />
         ) : (
           <EmptyServicesState acceptsBookings={acceptsBookings} businessName={merchant.business_name} />
         ))}

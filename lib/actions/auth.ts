@@ -75,3 +75,45 @@ export async function signOutAction() {
   await supabase.auth.signOut();
   redirect("/");
 }
+
+export interface UpdateContactInfoState {
+  error?: string;
+  success?: boolean;
+}
+
+/** Confirms/updates the caller's own name and phone -- phone in
+ *  particular is never collected at sign-up, so this is the first
+ *  point most clients ever set it, typically surfaced right before
+ *  confirming a booking (the merchant dashboard already reads and
+ *  displays profiles.phone in several places; this is what fills it). */
+export async function updateContactInfoAction(input: {
+  fullName: string;
+  phone: string;
+}): Promise<UpdateContactInfoState> {
+  const fullName = input.fullName.trim();
+  const phone = input.phone.trim();
+
+  if (!fullName || !phone) {
+    return { error: "Completează numele și numărul de telefon." };
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "Trebuie să fii autentificat." };
+  }
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({ full_name: fullName, phone })
+    .eq("id", user.id);
+
+  if (error) {
+    return { error: "Nu am putut salva datele de contact. Încearcă din nou." };
+  }
+
+  return { success: true };
+}

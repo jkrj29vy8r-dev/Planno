@@ -72,7 +72,7 @@ export default async function MerchantPage({ params }: MerchantPageProps) {
         <MerchantProfileTabs
           merchant={merchant}
           services={activeServices}
-          isAuthenticated={Boolean(profile)}
+          profile={profile}
           acceptsBookings={acceptsBookings}
           reviewSummary={reviewSummary}
         />

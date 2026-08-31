@@ -9,8 +9,9 @@ import { buttonVariants } from "@/lib/button-variants";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Planni } from "@/components/planni";
+import { BookingConfirmModal } from "@/components/booking-confirm-modal";
 import { cn } from "@/lib/utils";
-import { formatDateChip, formatDuration, formatPrice } from "@/lib/format";
+import { formatDateChip, formatDateLong, formatDuration, formatPrice } from "@/lib/format";
 import { formatTimeInZone, todayInZone } from "@/lib/timezone";
 import { fetchAvailableSlotsAction } from "@/lib/actions/availability";
 import { createBookingAction } from "@/lib/actions/bookings";
@@ -22,7 +23,7 @@ type Service = Tables<"services">;
 interface BookingPanelProps {
   merchant: MerchantDetail;
   services: Service[];
-  isAuthenticated: boolean;
+  profile: Tables<"profiles"> | null;
 }
 
 const EASE = [0.16, 1, 0.3, 1] as const;
@@ -38,7 +39,8 @@ function nextDays(count: number, timezone: string): string[] {
   });
 }
 
-export function BookingPanel({ merchant, services, isAuthenticated }: BookingPanelProps) {
+export function BookingPanel({ merchant, services, profile }: BookingPanelProps) {
+  const isAuthenticated = Boolean(profile);
   const dateOptions = React.useMemo(() => nextDays(7, merchant.timezone), [merchant.timezone]);
 
   const [selectedService, setSelectedService] = React.useState<Service | null>(null);
@@ -49,6 +51,7 @@ export function BookingPanel({ merchant, services, isAuthenticated }: BookingPan
   const [notes, setNotes] = React.useState("");
   const [step, setStep] = React.useState<"idle" | "loading" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = React.useState("");
+  const [showConfirmModal, setShowConfirmModal] = React.useState(false);
 
   const loadSlots = React.useCallback(
     async (service: Service, date: string) => {
@@ -97,6 +100,17 @@ export function BookingPanel({ merchant, services, isAuthenticated }: BookingPan
       return;
     }
     setStep("success");
+  }
+
+  function confirmSummary(): string {
+    if (!selectedService || !selectedSlot) return "";
+    const dayLabel =
+      selectedDate === dateOptions[0]
+        ? "azi"
+        : selectedDate === dateOptions[1]
+          ? "mâine"
+          : formatDateLong(new Date(`${selectedDate}T12:00:00Z`), merchant.timezone);
+    return `${selectedService.name} · ${dayLabel} la ${formatTimeInZone(new Date(selectedSlot), merchant.timezone)}`;
   }
 
   function resetFlow() {
@@ -274,7 +288,7 @@ export function BookingPanel({ merchant, services, isAuthenticated }: BookingPan
 
                       {/* Click 3: confirm */}
                       {isAuthenticated ? (
-                        <Button className="w-full" onClick={handleConfirm}>
+                        <Button className="w-full" onClick={() => setShowConfirmModal(true)}>
                           Confirmă rezervarea
                         </Button>
                       ) : (
@@ -298,6 +312,17 @@ export function BookingPanel({ merchant, services, isAuthenticated }: BookingPan
           </CardContent>
         </Card>
       </div>
+
+      {profile && (
+        <BookingConfirmModal
+          open={showConfirmModal}
+          onOpenChange={setShowConfirmModal}
+          summary={confirmSummary()}
+          initialFullName={profile.full_name}
+          initialPhone={profile.phone ?? ""}
+          onConfirmed={handleConfirm}
+        />
+      )}
     </div>
   );
 }
