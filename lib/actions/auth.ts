@@ -37,6 +37,11 @@ export async function signUpAction(
   const fullName = String(formData.get("fullName") ?? "").trim();
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
+  // Whitelisted here too, not just in the handle_new_user trigger: an
+  // unrecognized value should read as a form bug, not silently become
+  // whatever the trigger's own else-branch defaults to.
+  const roleInput = String(formData.get("role") ?? "client");
+  const role = roleInput === "merchant" ? "merchant" : "client";
 
   if (!fullName || !email || !password) {
     return { error: "Completează toate câmpurile." };
@@ -49,7 +54,7 @@ export async function signUpAction(
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
-    options: { data: { full_name: fullName } },
+    options: { data: { full_name: fullName, role } },
   });
 
   if (error) {
@@ -64,7 +69,7 @@ export async function signUpAction(
   // Depending on the project's email-confirmation setting, signUp may
   // or may not return an active session immediately.
   if (data.session) {
-    redirect("/client/dashboard");
+    redirect(role === "merchant" ? "/merchant/dashboard" : "/client/dashboard");
   }
 
   return { message: "Cont creat! Verifică-ți email-ul pentru a confirma contul." };

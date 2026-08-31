@@ -4,7 +4,14 @@ import { SignupForm } from "@/components/signup-form";
 
 export const metadata = { title: "Cont nou · Planno" };
 
-export default function SignupPage() {
+interface SignupPageProps {
+  searchParams: Promise<{ role?: string }>;
+}
+
+export default async function SignupPage({ searchParams }: SignupPageProps) {
+  const params = await searchParams;
+  const initialRole = params.role === "merchant" ? "merchant" : "client";
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-6 py-16">
       <div className="w-full max-w-sm">
@@ -15,10 +22,14 @@ export default function SignupPage() {
         <Card>
           <CardHeader>
             <CardTitle>Creează-ți contul</CardTitle>
-            <CardDescription>Rezervă la comercianții tăi preferați în câteva clickuri.</CardDescription>
+            <CardDescription>
+              {initialRole === "merchant"
+                ? "Listează-ți afacerea și lasă clienții să se programeze singuri."
+                : "Rezervă la comercianții tăi preferați în câteva clickuri."}
+            </CardDescription>
           </CardHeader>
           <CardContent className="pt-2">
-            <SignupForm />
+            <SignupForm initialRole={initialRole} />
           </CardContent>
         </Card>
       </div>

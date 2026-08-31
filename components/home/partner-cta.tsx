@@ -37,7 +37,7 @@ export function PartnerCta() {
           </p>
         </div>
 
-        <Link href="/signup" className={cn(buttonVariants({ size: "lg" }), "relative z-10 shrink-0")}>
+        <Link href="/signup?role=merchant" className={cn(buttonVariants({ size: "lg" }), "relative z-10 shrink-0")}>
           Află mai multe
           <ArrowRight className="size-4" aria-hidden="true" />
         </Link>

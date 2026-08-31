@@ -75,7 +75,7 @@ export function FounderLaunchSection() {
             vizibilitate maximă, fără nicio altă afacere cu care să concurezi.
           </p>
 
-          <Link href="/signup" className={cn(buttonVariants({ size: "lg" }), "mt-1")}>
+          <Link href="/signup?role=merchant" className={cn(buttonVariants({ size: "lg" }), "mt-1")}>
             Listează-ți afacerea gratuit
           </Link>
 
