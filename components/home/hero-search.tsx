@@ -15,7 +15,7 @@ interface HeroSearchProps {
 }
 
 const PLACEHOLDERS = [
-  "Caută un tuns bărbați în Roman...",
+  "Caută un tuns bărbați în București...",
   "Rezervă o ședință de masaj de relaxare...",
   "Caută un antrenor personal de fitness...",
   "Închiriază un teren de padel...",
@@ -69,7 +69,7 @@ export function HeroSearch({ categories, initialQuery, initialCity }: HeroSearch
         onSubmit={handleSubmit}
         className="relative mx-auto flex w-full max-w-2xl flex-col items-center rounded-2xl border border-white/10 bg-zinc-900/80 p-2 shadow-2xl backdrop-blur-xl transition-all hover:border-orange-500/30 sm:flex-row sm:rounded-full"
       >
-        <div className="flex w-full items-center px-4 py-2 sm:py-0">
+        <div className="flex w-full min-w-0 items-center px-4 py-2 sm:py-0">
           <Search className="mr-3 size-5 shrink-0 text-zinc-400" aria-hidden="true" />
           <span className="sr-only">Ce serviciu cauți?</span>
           <input
@@ -78,7 +78,7 @@ export function HeroSearch({ categories, initialQuery, initialCity }: HeroSearch
             onChange={(event) => setQuery(event.target.value)}
             placeholder={PLACEHOLDERS[currentPlaceholder]}
             className={cn(
-              "w-full bg-transparent text-sm text-white outline-none placeholder-zinc-500 transition-opacity duration-300 sm:text-base",
+              "w-full min-w-0 truncate bg-transparent text-sm text-white outline-none placeholder-zinc-500 transition-opacity duration-300 sm:text-base",
               // Only the placeholder cross-fades -- once there's real
               // typed text, `fade` toggling must never touch its
               // opacity, or the query itself would flicker invisible
@@ -90,15 +90,15 @@ export function HeroSearch({ categories, initialQuery, initialCity }: HeroSearch
 
         <div className="hidden h-6 w-px bg-white/10 sm:block" aria-hidden="true" />
 
-        <div className="flex w-full items-center border-t border-white/5 px-4 py-2 sm:w-auto sm:border-t-0 sm:py-0">
+        <div className="flex w-full min-w-0 items-center border-t border-white/5 px-4 py-2 sm:w-auto sm:border-t-0 sm:py-0">
           <MapPin className="mr-2 size-5 shrink-0 text-orange-500" aria-hidden="true" />
           <span className="sr-only">Oraș</span>
           <input
             type="text"
             value={location}
             onChange={(event) => setLocation(event.target.value)}
-            placeholder="Roman"
-            className="w-full bg-transparent text-sm text-white outline-none placeholder-zinc-500 sm:w-28 sm:text-base"
+            placeholder="București"
+            className="w-full min-w-0 truncate bg-transparent text-sm text-white outline-none placeholder-zinc-500 sm:w-28 sm:text-base"
           />
         </div>
 
