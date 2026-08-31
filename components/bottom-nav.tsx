@@ -15,7 +15,7 @@ interface BottomNavProps {
 export function navItems(isAuthenticated: boolean) {
   return [
     { id: "home", href: "/", label: "Acasă", icon: Home },
-    { id: "search", href: "/#rezultate", label: "Căutare", icon: Search },
+    { id: "search", href: "/search", label: "Căutare", icon: Search },
     {
       id: "bookings",
       href: isAuthenticated ? "/client/dashboard" : "/login?redirect=/client/dashboard",
@@ -27,25 +27,23 @@ export function navItems(isAuthenticated: boolean) {
 }
 
 /**
- * Shared with DesktopNavLinks. Two things a naive comparison gets
- * wrong, both of which used to light up two items at once:
+ * Shared with DesktopNavLinks. Strict full-href equality, never
+ * startsWith/includes -- every nav item lights up only on its own
+ * exact route, and two items can never light up together.
  *
- * - usePathname() never reports the hash, so an in-page anchor like
- *   "/#rezultate" is indistinguishable from "/" and must never claim
- *   the active state -- otherwise it and the real "/" item (Acasă)
- *   would both light up together on the home page.
- * - When logged out, "Programări" and "Cont" both route through
- *   /login ("/login?redirect=/client/dashboard" and "/login"). Matching
- *   on the pathname alone (stripping the query) made both resolve to
- *   the same /login and light up together on the login page. Comparing
- *   the full href instead fixes this correctly rather than
- *   coincidentally: /login *is* Cont's real unauthenticated
- *   destination, but it's merely a waypoint for Programări, whose own
- *   href is the longer redirect string -- so only Cont should ever
- *   claim it.
+ * Two cases this has to keep getting right:
+ *
+ * - "/" is a prefix of literally every route, so prefix matching would
+ *   leave Acasă lit on every page. Exact equality is the only correct
+ *   test for it.
+ * - When logged out, "Programări" and "Cont" both route through /login
+ *   ("/login?redirect=/client/dashboard" and "/login"). Comparing the
+ *   full href keeps them apart: /login *is* Cont's real unauthenticated
+ *   destination, but merely a waypoint for Programări, whose own href
+ *   is the longer redirect string -- so only Cont ever claims it.
+ *   Stripping the query here would relight both.
  */
 export function isNavItemActive(pathname: string, href: string): boolean {
-  if (href.includes("#")) return false;
   return pathname === href;
 }
 

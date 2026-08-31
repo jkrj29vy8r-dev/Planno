@@ -54,7 +54,7 @@ export function HeroShowcase({ categories }: { categories: ShowcaseCategory[] })
               onMouseLeave={() => setHovered(null)}
             >
               <Link
-                href={`/?category=${category.id}#rezultate`}
+                href={`/search?category=${category.id}`}
                 className={cn(
                   "relative block h-64 overflow-hidden rounded-2xl border border-white/10 transition-all duration-500",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",

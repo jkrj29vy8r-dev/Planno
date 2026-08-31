@@ -51,10 +51,10 @@ export function HeroSearch({ categories, initialQuery, initialCity }: HeroSearch
     if (next.city) params.set("city", next.city);
     if (next.category) params.set("category", next.category);
 
+    // Lands on the dedicated /search route rather than an in-page
+    // anchor, so a search is a real navigation the nav bar can reflect.
     startTransition(() => {
-      router.push(params.size > 0 ? `/?${params.toString()}#rezultate` : "/#rezultate", {
-        scroll: true,
-      });
+      router.push(params.size > 0 ? `/search?${params.toString()}` : "/search", { scroll: true });
     });
   }
 
