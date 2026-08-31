@@ -2,14 +2,11 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { AnimatePresence, motion } from "framer-motion";
-import { ArrowRight, MapPin, Search } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { MapPin, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { categoryLabel } from "@/lib/categories";
 
 interface HeroSearchProps {
-  cities: string[];
   /** Category ids that actually have merchants, rendered as quick chips
    *  so a chip can never lead to an empty result set. */
   categories: string[];
@@ -17,29 +14,35 @@ interface HeroSearchProps {
   initialCity?: string;
 }
 
-const SEARCH_PLACEHOLDERS = [
+const PLACEHOLDERS = [
   "Caută un tuns bărbați în Roman...",
   "Rezervă o ședință de masaj de relaxare...",
-  "Caută antrenor personal de fitness...",
+  "Caută un antrenor personal de fitness...",
   "Închiriază un teren de padel...",
-  "Găsește salon pentru manichiură...",
+  "Găsește un salon de manichiură...",
 ];
 
-const PLACEHOLDER_INTERVAL_MS = 3000;
+const CYCLE_MS = 3200;
+const FADE_MS = 300;
 
-export function HeroSearch({ cities, categories, initialQuery, initialCity }: HeroSearchProps) {
+export function HeroSearch({ categories, initialQuery, initialCity }: HeroSearchProps) {
   const router = useRouter();
+  const [currentPlaceholder, setCurrentPlaceholder] = React.useState(0);
+  const [fade, setFade] = React.useState(true);
   const [query, setQuery] = React.useState(initialQuery ?? "");
-  const [city, setCity] = React.useState(initialCity ?? "");
+  const [location, setLocation] = React.useState(initialCity ?? "");
   const [isPending, startTransition] = React.useTransition();
-  const [placeholderIndex, setPlaceholderIndex] = React.useState(0);
 
   React.useEffect(() => {
-    const timer = setInterval(
-      () => setPlaceholderIndex((i) => (i + 1) % SEARCH_PLACEHOLDERS.length),
-      PLACEHOLDER_INTERVAL_MS,
-    );
-    return () => clearInterval(timer);
+    const interval = setInterval(() => {
+      setFade(false);
+      setTimeout(() => {
+        setCurrentPlaceholder((prev) => (prev + 1) % PLACEHOLDERS.length);
+        setFade(true);
+      }, FADE_MS);
+    }, CYCLE_MS);
+
+    return () => clearInterval(interval);
   }, []);
 
   function pushSearch(next: { q?: string; city?: string; category?: string }) {
@@ -57,70 +60,59 @@ export function HeroSearch({ cities, categories, initialQuery, initialCity }: He
 
   function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
-    pushSearch({ q: query.trim() || undefined, city: city || undefined });
+    pushSearch({ q: query.trim() || undefined, city: location.trim() || undefined });
   }
 
   return (
     <div className="w-full">
       <form
         onSubmit={handleSubmit}
-        className="glass-panel flex flex-col gap-2 rounded-2xl p-2.5 shadow-xl shadow-black/[0.06] sm:flex-row sm:items-center dark:shadow-black/30"
+        className="relative mx-auto flex w-full max-w-2xl flex-col items-center rounded-2xl border border-white/10 bg-zinc-900/80 p-2 shadow-2xl backdrop-blur-xl transition-all hover:border-orange-500/30 sm:flex-row sm:rounded-full"
       >
-        <label className="flex min-w-0 flex-1 items-center gap-3 rounded-xl px-4 py-3 transition-colors focus-within:bg-muted/50">
-          <Search className="size-[18px] shrink-0 text-muted-foreground" aria-hidden="true" />
+        <div className="flex w-full items-center px-4 py-2 sm:py-0">
+          <Search className="mr-3 size-5 shrink-0 text-zinc-400" aria-hidden="true" />
           <span className="sr-only">Ce serviciu cauți?</span>
-          <div className="relative min-w-0 flex-1">
-            <input
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              className="w-full min-w-0 bg-transparent text-base text-foreground outline-none"
-            />
-            {query.length === 0 && (
-              <div className="pointer-events-none absolute inset-0 flex items-center overflow-hidden">
-                <AnimatePresence mode="wait">
-                  <motion.span
-                    key={placeholderIndex}
-                    initial={{ opacity: 0, filter: "blur(4px)" }}
-                    animate={{ opacity: 1, filter: "blur(0px)" }}
-                    exit={{ opacity: 0, filter: "blur(4px)" }}
-                    transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-                    className="block truncate text-base text-muted-foreground/70 sm:text-[13px]"
-                  >
-                    {SEARCH_PLACEHOLDERS[placeholderIndex]}
-                  </motion.span>
-                </AnimatePresence>
-              </div>
+          <input
+            type="text"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder={PLACEHOLDERS[currentPlaceholder]}
+            className={cn(
+              "w-full bg-transparent text-sm text-white outline-none placeholder-zinc-500 transition-opacity duration-300 sm:text-base",
+              // Only the placeholder cross-fades -- once there's real
+              // typed text, `fade` toggling must never touch its
+              // opacity, or the query itself would flicker invisible
+              // every cycle.
+              query.length === 0 && !fade && "opacity-0",
             )}
-          </div>
-        </label>
+          />
+        </div>
 
-        <span aria-hidden="true" className="hidden h-8 w-px bg-border/60 sm:block" />
+        <div className="hidden h-6 w-px bg-white/10 sm:block" aria-hidden="true" />
 
-        <label className="flex items-center gap-3 rounded-xl px-4 py-3 transition-colors focus-within:bg-muted/50 sm:w-48">
-          <MapPin className="size-[18px] shrink-0 text-muted-foreground" aria-hidden="true" />
+        <div className="flex w-full items-center border-t border-white/5 px-4 py-2 sm:w-auto sm:border-t-0 sm:py-0">
+          <MapPin className="mr-2 size-5 shrink-0 text-orange-500" aria-hidden="true" />
           <span className="sr-only">Oraș</span>
-          <select
-            value={city}
-            onChange={(event) => setCity(event.target.value)}
-            className="min-w-0 flex-1 cursor-pointer appearance-none bg-transparent text-base text-foreground outline-none"
-          >
-            <option value="">Toate orașele</option>
-            {cities.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
-        </label>
+          <input
+            type="text"
+            value={location}
+            onChange={(event) => setLocation(event.target.value)}
+            placeholder="Roman"
+            className="w-full bg-transparent text-sm text-white outline-none placeholder-zinc-500 sm:w-28 sm:text-base"
+          />
+        </div>
 
-        <Button type="submit" size="lg" className="shrink-0 rounded-xl" isLoading={isPending}>
-          Găsește și rezervă
-          <ArrowRight className="size-4" />
-        </Button>
+        <button
+          type="submit"
+          disabled={isPending}
+          className="mt-2 w-full shrink-0 rounded-xl bg-orange-500 px-6 py-3 text-sm font-semibold text-black shadow-lg shadow-orange-500/20 transition-all duration-200 hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-70 sm:mt-0 sm:w-auto sm:rounded-full"
+        >
+          {isPending ? "Se caută..." : "Caută"}
+        </button>
       </form>
 
       {categories.length > 0 && (
-        <div className="mt-4 flex flex-wrap items-center gap-2">
+        <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
           <span className="text-xs text-muted-foreground">Populare:</span>
           {categories.slice(0, 5).map((category) => (
             <button

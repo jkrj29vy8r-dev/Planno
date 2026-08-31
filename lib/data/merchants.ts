@@ -40,7 +40,10 @@ export async function searchMerchants(filters: MerchantSearchFilters = {}): Prom
     query = query.eq("category", filters.category);
   }
   if (filters.city) {
-    query = query.eq("city", filters.city);
+    // Case-insensitive: the hero search bar takes a free-text location
+    // now, not a dropdown of exact known city strings, so "roman" has
+    // to match a stored "Roman".
+    query = query.ilike("city", sanitizeSearchTerm(filters.city));
   }
 
   const { data, error } = await query;

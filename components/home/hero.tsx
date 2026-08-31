@@ -97,12 +97,7 @@ export function Hero({ merchants, cities, categories, stats, initialQuery, initi
         </p>
 
         <div className="mt-9 w-full">
-          <HeroSearch
-            cities={cities}
-            categories={categories}
-            initialQuery={initialQuery}
-            initialCity={initialCity}
-          />
+          <HeroSearch categories={categories} initialQuery={initialQuery} initialCity={initialCity} />
         </div>
 
         <div className="mt-5 hidden lg:flex">
