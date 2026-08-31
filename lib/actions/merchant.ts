@@ -1,7 +1,9 @@
 "use server";
 
+import { after } from "next/server";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { sendBookingConfirmedClientSms } from "@/lib/booking-sms";
 import type { Json, TablesUpdate } from "@/types/database.types";
 
 export interface MerchantActionState {
@@ -119,10 +121,39 @@ export async function updateMerchantBookingStatusAction(
     else update.merchant_notes = note;
   }
 
-  const { error } = await supabase.from("bookings").update(update).eq("id", bookingId);
+  // The joined columns are only needed for the "booking confirmed" SMS
+  // below, not for the status update itself.
+  const { data: booking, error } = await supabase
+    .from("bookings")
+    .update(update)
+    .eq("id", bookingId)
+    .select("merchant_id, start_time, merchant:merchants(business_name, timezone), service:services(name), client:profiles(phone)")
+    .single();
 
   if (error) {
     return { error: "Nu am putut actualiza statusul rezervării." };
+  }
+
+  // Only on the actual pending -> confirmed transition -- see
+  // sendBookingConfirmedClientSms's own doc comment for why this can't
+  // fire at booking creation instead.
+  if (status === "confirmed") {
+    const merchant = booking.merchant as unknown as { business_name: string; timezone: string } | null;
+    const service = booking.service as unknown as { name: string } | null;
+    const client = booking.client as unknown as { phone: string | null } | null;
+
+    if (merchant && service && client) {
+      after(() =>
+        sendBookingConfirmedClientSms({
+          merchantId: booking.merchant_id,
+          merchantName: merchant.business_name,
+          clientPhone: client.phone,
+          serviceName: service.name,
+          startTime: new Date(booking.start_time),
+          timezone: merchant.timezone,
+        }),
+      );
+    }
   }
 
   revalidatePath("/merchant/dashboard");

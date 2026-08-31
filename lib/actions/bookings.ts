@@ -1,7 +1,9 @@
 "use server";
 
+import { after } from "next/server";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { sendNewBookingMerchantSms } from "@/lib/booking-sms";
 
 export interface BookingActionState {
   error?: string;
@@ -30,21 +32,50 @@ export async function createBookingAction(input: {
 
   // end_time/price are recomputed by the derive_booking_price_and_duration
   // trigger from service_id + start_time -- what's sent here for them
-  // never actually reaches storage.
-  const { error } = await supabase.from("bookings").insert({
-    merchant_id: input.merchantId,
-    client_id: user.id,
-    service_id: input.serviceId,
-    start_time: input.startTime,
-    end_time: input.startTime,
-    client_notes: input.clientNotes || null,
-  });
+  // never actually reaches storage. The joined columns below aren't
+  // needed for the booking itself, only for the "new booking" SMS
+  // fired after this returns.
+  const { data: booking, error } = await supabase
+    .from("bookings")
+    .insert({
+      merchant_id: input.merchantId,
+      client_id: user.id,
+      service_id: input.serviceId,
+      start_time: input.startTime,
+      end_time: input.startTime,
+      client_notes: input.clientNotes || null,
+    })
+    .select(
+      "start_time, merchant:merchants(business_name, phone, timezone), service:services(name), client:profiles(full_name, phone)",
+    )
+    .single();
 
   if (error) {
     if (error.code === EXCLUSION_VIOLATION) {
       return { error: "Acest interval tocmai a fost rezervat de altcineva. Alege alt interval." };
     }
     return { error: "Nu am putut crea rezervarea. Încearcă din nou." };
+  }
+
+  // Fire-and-forget: after() runs this once the response has already
+  // gone out, so a slow or down SMS provider can never delay or fail
+  // a booking that already succeeded.
+  const merchant = booking.merchant as unknown as { business_name: string; phone: string | null; timezone: string } | null;
+  const service = booking.service as unknown as { name: string } | null;
+  const client = booking.client as unknown as { full_name: string; phone: string | null } | null;
+
+  if (merchant && service && client) {
+    after(() =>
+      sendNewBookingMerchantSms({
+        merchantId: input.merchantId,
+        merchantPhone: merchant.phone,
+        clientName: client.full_name,
+        clientPhone: client.phone,
+        serviceName: service.name,
+        startTime: new Date(booking.start_time),
+        timezone: merchant.timezone,
+      }),
+    );
   }
 
   revalidatePath("/client/dashboard");

@@ -119,6 +119,7 @@ export type Database = {
           rating: number | null
           rating_count: number
           slug: string
+          sms_credits: number
           timezone: string
           updated_at: string
           working_hours: Json
@@ -141,6 +142,7 @@ export type Database = {
           rating?: number | null
           rating_count?: number
           slug: string
+          sms_credits?: number
           timezone?: string
           updated_at?: string
           working_hours?: Json
@@ -163,6 +165,7 @@ export type Database = {
           rating?: number | null
           rating_count?: number
           slug?: string
+          sms_credits?: number
           timezone?: string
           updated_at?: string
           working_hours?: Json
@@ -399,6 +402,10 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      consume_sms_credit: {
+        Args: { target_merchant_id: string }
+        Returns: boolean
       }
       has_role: {
         Args: { target_role: Database["public"]["Enums"]["user_role"] }
