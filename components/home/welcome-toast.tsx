@@ -14,6 +14,14 @@ const VISIBLE_MS = 5000;
  * flip with the site's theme. Exit uses the same AnimatePresence as the
  * auto-hide path (not a plain unmount) so dismissing early animates out
  * instead of cutting off abruptly.
+ *
+ * No backdrop-blur here even though the visual is going for a frosted
+ * look: this element is both `fixed` and animated via a framer-motion
+ * `transform` (the slide-in y offset), and backdrop-filter combined
+ * with an animated transform on the same element is a known WebKit
+ * compositing bug -- the blurred fill can fail to paint entirely,
+ * leaving only the border visible. bg-zinc-900/90 is opaque enough on
+ * its own not to need the blur-behind effect.
  */
 export function WelcomeToast() {
   const [show, setShow] = React.useState(false);
@@ -38,7 +46,7 @@ export function WelcomeToast() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -24 }}
             transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-            className="pointer-events-auto flex items-center gap-3 rounded-full border border-orange-500/30 bg-zinc-900/90 px-4 py-2.5 text-white shadow-2xl backdrop-blur-md"
+            className="pointer-events-auto flex items-center gap-3 rounded-full border border-orange-500/30 bg-zinc-900/90 px-4 py-2.5 text-white shadow-2xl"
           >
             <Sparkles className="size-4 shrink-0 text-orange-400" aria-hidden="true" />
             <span className="text-xs font-medium sm:text-sm">
