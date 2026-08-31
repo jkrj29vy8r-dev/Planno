@@ -10,6 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Planni } from "@/components/planni";
 import { BookingConfirmModal } from "@/components/booking-confirm-modal";
+import { BookingSuccessModal } from "@/components/booking-success-modal";
 import { cn } from "@/lib/utils";
 import { formatDateChip, formatDateLong, formatDuration, formatPrice } from "@/lib/format";
 import { formatTimeInZone, todayInZone } from "@/lib/timezone";
@@ -49,9 +50,15 @@ export function BookingPanel({ merchant, services, profile }: BookingPanelProps)
   const [slotsLoading, setSlotsLoading] = React.useState(false);
   const [selectedSlot, setSelectedSlot] = React.useState<string | null>(null);
   const [notes, setNotes] = React.useState("");
-  const [step, setStep] = React.useState<"idle" | "loading" | "success" | "error">("idle");
+  const [step, setStep] = React.useState<"idle" | "loading" | "error">("idle");
   const [errorMessage, setErrorMessage] = React.useState("");
   const [showConfirmModal, setShowConfirmModal] = React.useState(false);
+  const [successBooking, setSuccessBooking] = React.useState<{
+    serviceName: string;
+    startTime: Date;
+    endTime: Date;
+  } | null>(null);
+  const [showSuccessModal, setShowSuccessModal] = React.useState(false);
 
   const loadSlots = React.useCallback(
     async (service: Service, date: string) => {
@@ -99,7 +106,12 @@ export function BookingPanel({ merchant, services, profile }: BookingPanelProps)
       setStep("error");
       return;
     }
-    setStep("success");
+
+    const startTime = new Date(selectedSlot);
+    const endTime = new Date(startTime.getTime() + selectedService.duration_minutes * 60_000);
+    setSuccessBooking({ serviceName: selectedService.name, startTime, endTime });
+    setShowSuccessModal(true);
+    resetFlow();
   }
 
   function confirmSummary(): string {
@@ -168,19 +180,7 @@ export function BookingPanel({ merchant, services, profile }: BookingPanelProps)
         <Card>
           <CardContent className="space-y-5 pt-6">
             <AnimatePresence mode="wait">
-              {step === "success" ? (
-                <motion.div
-                  key="success"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="flex flex-col items-center gap-1 py-4 text-center"
-                >
-                  <Planni state="success" size={120} message="Rezervare confirmată! O găsești în contul tău." />
-                  <Button variant="outline" size="sm" className="mt-4" onClick={resetFlow}>
-                    Fă o altă rezervare
-                  </Button>
-                </motion.div>
-              ) : step === "error" ? (
+              {step === "error" ? (
                 <motion.div
                   key="error"
                   initial={{ opacity: 0 }}
@@ -321,6 +321,21 @@ export function BookingPanel({ merchant, services, profile }: BookingPanelProps)
           initialFullName={profile.full_name}
           initialPhone={profile.phone ?? ""}
           onConfirmed={handleConfirm}
+        />
+      )}
+
+      {successBooking && (
+        <BookingSuccessModal
+          open={showSuccessModal}
+          onOpenChange={setShowSuccessModal}
+          onBookAnother={() => setShowSuccessModal(false)}
+          serviceName={successBooking.serviceName}
+          merchantName={merchant.business_name}
+          merchantAddress={merchant.address}
+          merchantCity={merchant.city}
+          startTime={successBooking.startTime}
+          endTime={successBooking.endTime}
+          timezone={merchant.timezone}
         />
       )}
     </div>
