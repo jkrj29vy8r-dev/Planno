@@ -242,17 +242,18 @@ export function BookingPanel({ merchant, services, isAuthenticated }: BookingPan
                         Nicio oră liberă în această zi.
                       </p>
                     ) : (
-                      <div className="grid grid-cols-3 gap-2">
+                      <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-7 lg:grid-cols-3">
                         {slots.map((slot) => (
                           <button
                             key={slot}
                             type="button"
                             onClick={() => setSelectedSlot(slot)}
+                            aria-pressed={selectedSlot === slot}
                             className={cn(
-                              "rounded-lg border px-2 py-2 font-mono text-sm transition-colors",
+                              "rounded-xl border py-2.5 font-mono text-sm font-semibold transition-all",
                               selectedSlot === slot
-                                ? "border-accent bg-accent text-accent-foreground"
-                                : "border-border/50 hover:bg-muted/60",
+                                ? "border-accent bg-accent text-accent-foreground shadow-lg shadow-accent/20"
+                                : "border-border/50 bg-muted/30 text-muted-foreground hover:border-border",
                             )}
                           >
                             {formatTimeInZone(new Date(slot), merchant.timezone)}
