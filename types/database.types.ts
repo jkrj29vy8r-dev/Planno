@@ -376,10 +376,68 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      _upsert_active_subscription: {
+        Args: {
+          p_merchant_id: string
+          p_plan: Database["public"]["Enums"]["subscription_plan"]
+          p_stripe_customer_id?: string
+          p_stripe_subscription_id?: string
+        }
+        Returns: {
+          cancel_at_period_end: boolean
+          created_at: string
+          currency: string
+          expires_at: string
+          id: string
+          merchant_id: string
+          plan: Database["public"]["Enums"]["subscription_plan"]
+          price: number
+          starts_at: string
+          status: Database["public"]["Enums"]["subscription_status"]
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "subscriptions"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       activate_merchant_subscription: {
         Args: {
           p_merchant_id: string
           p_plan: Database["public"]["Enums"]["subscription_plan"]
+        }
+        Returns: {
+          cancel_at_period_end: boolean
+          created_at: string
+          currency: string
+          expires_at: string
+          id: string
+          merchant_id: string
+          plan: Database["public"]["Enums"]["subscription_plan"]
+          price: number
+          starts_at: string
+          status: Database["public"]["Enums"]["subscription_status"]
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "subscriptions"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      activate_merchant_subscription_from_stripe: {
+        Args: {
+          p_merchant_id: string
+          p_plan: Database["public"]["Enums"]["subscription_plan"]
+          p_stripe_customer_id?: string
+          p_stripe_subscription_id?: string
         }
         Returns: {
           cancel_at_period_end: boolean

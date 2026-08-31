@@ -45,17 +45,17 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
     cadence: "3 luni",
     tagline: "Același Planno, la un preț lunar mai mic.",
     badge: "Economisești 16%",
-    highlight: true,
   },
   {
     id: "annual",
     name: "Anual",
-    price: 990,
+    price: 899,
     currency: "RON",
     months: 12,
     cadence: "an",
-    tagline: "Plătești 10 luni, primești 12.",
-    badge: "2 luni gratuite",
+    tagline: "Economisești 25% față de plata lunară.",
+    badge: "Best Value",
+    highlight: true,
   },
 ];
 

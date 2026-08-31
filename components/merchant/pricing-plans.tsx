@@ -6,7 +6,7 @@ import { Check, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { formatPrice } from "@/lib/format";
-import { activateSubscriptionAction } from "@/lib/actions/subscription";
+import { createCheckoutSessionAction } from "@/lib/actions/subscription";
 import {
   PLAN_FEATURES,
   SUBSCRIPTION_PLANS,
@@ -33,13 +33,24 @@ export function PricingPlans({ merchantId, currentPlan, isRenewal = false }: Pri
   async function handleSelect(plan: PlanId) {
     setPendingPlan(plan);
     setError("");
-    const result = await activateSubscriptionAction(merchantId, plan);
-    setPendingPlan(null);
+    const result = await createCheckoutSessionAction(merchantId, plan);
 
     if (result.error) {
+      setPendingPlan(null);
       setError(result.error);
       return;
     }
+
+    if (result.checkoutUrl) {
+      // Leaving the page for Stripe -- keep the button's loading state
+      // through the redirect instead of resetting it.
+      window.location.href = result.checkoutUrl;
+      return;
+    }
+
+    // No Stripe account connected yet: activated directly, same as
+    // before Checkout existed.
+    setPendingPlan(null);
     router.refresh();
   }
 
