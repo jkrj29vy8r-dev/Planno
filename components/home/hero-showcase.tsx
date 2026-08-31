@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { MotionConfig, motion } from "framer-motion";
@@ -15,40 +16,51 @@ export interface ShowcaseCategory {
   currency: string;
 }
 
-/** Staggered column offset so the grid reads as a composition rather
- *  than a table. Index-based, never random -- random values differ
- *  between the server and client render and break hydration. */
-const OFFSETS = ["mt-0", "mt-8", "mt-0", "mt-8"];
+/** Longer, marketing-style titles for the categories with a curated
+ *  photo. Scoped to this showcase only -- categoryLabel() stays the
+ *  short form used everywhere else (filter pills, merchant badges),
+ *  where a compound title would be too wide. */
+const SHOWCASE_TITLES: Record<string, string> = {
+  barbershop: "Frizerii & Barber",
+  salon: "Saloane & Înfrumusețare",
+  spa: "Spa & Masaj",
+  fitness: "Fitness & Sport",
+};
+
+function showcaseTitle(categoryId: string): string {
+  return SHOWCASE_TITLES[categoryId] ?? categoryLabel(categoryId);
+}
 
 export function HeroShowcase({ categories }: { categories: ShowcaseCategory[] }) {
+  const [hovered, setHovered] = React.useState<string | null>(null);
+
   if (categories.length === 0) return null;
 
   return (
     <MotionConfig reducedMotion="user">
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {categories.slice(0, 4).map((category, index) => {
           const visual = categoryVisual(category.id);
+          const isHovered = hovered === category.id;
+          const isDimmed = hovered !== null && !isHovered;
 
           return (
-          <motion.div
-            key={category.id}
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.15 + index * 0.09, ease: [0.16, 1, 0.3, 1] }}
-            className={cn(OFFSETS[index % OFFSETS.length])}
-          >
             <motion.div
-              animate={{ y: [0, -6, 0] }}
-              transition={{
-                duration: 5 + index * 0.6,
-                repeat: Infinity,
-                ease: "easeInOut",
-                delay: index * 0.4,
-              }}
+              key={category.id}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 + index * 0.08, ease: [0.16, 1, 0.3, 1] }}
+              onMouseEnter={() => setHovered(category.id)}
+              onMouseLeave={() => setHovered(null)}
             >
               <Link
                 href={`/?category=${category.id}#rezultate`}
-                className="group relative block aspect-[4/5] overflow-hidden rounded-2xl border border-white/10 shadow-2xl transition-[transform,border-color] duration-300 ease-[var(--ease-premium)] hover:-translate-y-1 hover:border-orange-500/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                className={cn(
+                  "relative block h-64 overflow-hidden rounded-2xl border border-white/10 transition-all duration-500",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                  isDimmed ? "opacity-50 blur-[1px]" : "opacity-100",
+                  isHovered && "border-orange-500/50 shadow-xl shadow-orange-500/10",
+                )}
               >
                 {visual.photo ? (
                   <>
@@ -65,14 +77,17 @@ export function HeroShowcase({ categories }: { categories: ShowcaseCategory[] })
                       src={visual.photo}
                       alt=""
                       fill
-                      sizes="(min-width: 640px) 22vw, 45vw"
-                      className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      sizes="(min-width: 1024px) 22vw, (min-width: 640px) 45vw, 100vw"
+                      className={cn(
+                        "object-cover transition-transform duration-700 ease-out",
+                        isHovered && "scale-[1.08]",
+                      )}
                     />
                   </>
                 ) : (
                   <CategoryIllustration
                     category={category.id}
-                    className="transition-transform duration-500 group-hover:scale-105"
+                    className={cn("transition-transform duration-700 ease-out", isHovered && "scale-[1.08]")}
                   />
                 )}
 
@@ -81,23 +96,20 @@ export function HeroShowcase({ categories }: { categories: ShowcaseCategory[] })
                 <div
                   className={cn(
                     "absolute inset-0 bg-gradient-to-t",
-                    visual.photo ? "from-black/90 to-black/20" : "from-black/70 via-black/5 to-transparent",
+                    visual.photo
+                      ? "from-black/90 via-black/40 to-transparent"
+                      : "from-black/70 via-black/5 to-transparent",
                   )}
                 />
 
-                <div className="absolute inset-x-0 bottom-0 p-4">
-                  <p className="text-[15px] font-semibold tracking-tight text-white">
-                    {categoryLabel(category.id)}
-                  </p>
-                  <p className="mt-0.5 text-xs text-white/70">
-                    {category.merchantCount}{" "}
-                    {category.merchantCount === 1 ? "afacere" : "afaceri"}
-                    {category.fromPrice !== null && ` · de la ${category.fromPrice} ${category.currency}`}
-                  </p>
+                <div className="absolute inset-x-0 bottom-0 flex flex-col justify-end p-5">
+                  <span className="mb-1 text-xs font-medium tracking-wider text-orange-400 uppercase">
+                    {category.merchantCount} {category.merchantCount === 1 ? "locație" : "locații"}
+                  </span>
+                  <h3 className="text-xl font-bold text-white">{showcaseTitle(category.id)}</h3>
                 </div>
               </Link>
             </motion.div>
-          </motion.div>
           );
         })}
       </div>
