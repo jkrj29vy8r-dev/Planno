@@ -35,24 +35,35 @@ export function Modal({ open, onOpenChange, children }: ModalProps) {
               />
             </DialogPrimitive.Overlay>
 
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-              <DialogPrimitive.Content asChild forceMount>
-                <motion.div
-                  className="glass-panel w-full max-w-md rounded-2xl p-6 focus:outline-none"
-                  initial={{ opacity: 0, scale: 0.96, y: 8 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.96, y: 8 }}
-                  transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-                >
-                  {children}
-                  <DialogPrimitive.Close
-                    className="absolute right-4 top-4 rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    aria-label="Închide"
+            {/* Scrolling lives on this outer element, not the flex
+                wrapper that centers the card: a single flex container
+                that's both `items-center` and `overflow-y-auto` clips
+                the top of its own overflow in some browsers once
+                content is taller than the viewport (e.g. the mobile
+                keyboard opening on a form field near the bottom of the
+                card) -- min-h-full on the inner wrapper lets it grow
+                past the viewport instead, so the outer scroll can
+                always reach every edge of the card. */}
+            <div className="fixed inset-0 z-50 overflow-y-auto">
+              <div className="flex min-h-full items-center justify-center p-4">
+                <DialogPrimitive.Content asChild forceMount>
+                  <motion.div
+                    className="glass-panel w-full max-w-md rounded-2xl p-6 focus:outline-none"
+                    initial={{ opacity: 0, scale: 0.96, y: 8 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.96, y: 8 }}
+                    transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
                   >
-                    <X className="size-4" />
-                  </DialogPrimitive.Close>
-                </motion.div>
-              </DialogPrimitive.Content>
+                    {children}
+                    <DialogPrimitive.Close
+                      className="absolute right-4 top-4 rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      aria-label="Închide"
+                    >
+                      <X className="size-4" />
+                    </DialogPrimitive.Close>
+                  </motion.div>
+                </DialogPrimitive.Content>
+              </div>
             </div>
           </DialogPrimitive.Portal>
         )}

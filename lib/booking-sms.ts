@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { formatDateLong, formatTime } from "@/lib/format";
-import { sendSms } from "@/lib/sms";
+import { sendSms, toRomanianE164 } from "@/lib/sms";
 
 /**
  * Both functions here create their own Supabase client and never
@@ -29,9 +29,11 @@ interface NewBookingSmsInput {
  *  no timing mismatch here the way there would be for the client
  *  message below. */
 export async function sendNewBookingMerchantSms(input: NewBookingSmsInput): Promise<void> {
-  if (!input.merchantPhone) {
-    console.error("[SMS] Merchant has no phone on file, skipping new-booking SMS", {
+  const merchantPhone = input.merchantPhone ? toRomanianE164(input.merchantPhone) : null;
+  if (!merchantPhone) {
+    console.error("[SMS] Merchant has no usable phone on file, skipping new-booking SMS", {
       merchantId: input.merchantId,
+      rawPhone: input.merchantPhone,
     });
     return;
   }
@@ -57,7 +59,7 @@ export async function sendNewBookingMerchantSms(input: NewBookingSmsInput): Prom
     `Serviciu: ${input.serviceName} pe ${formatDateLong(input.startTime, input.timezone)} ` +
     `la ora ${formatTime(input.startTime, input.timezone)}.`;
 
-  const result = await sendSms(input.merchantPhone, message);
+  const result = await sendSms(merchantPhone, message);
   if (!result.success) {
     console.error("[SMS] New-booking SMS to merchant failed", { merchantId: input.merchantId, error: result.error });
   }
@@ -78,9 +80,11 @@ interface BookingConfirmedSmsInput {
  *  would tell the client something that isn't true yet. Spends the
  *  same merchant SMS balance the new-booking message draws from. */
 export async function sendBookingConfirmedClientSms(input: BookingConfirmedSmsInput): Promise<void> {
-  if (!input.clientPhone) {
-    console.error("[SMS] Client has no phone on file, skipping confirmation SMS", {
+  const clientPhone = input.clientPhone ? toRomanianE164(input.clientPhone) : null;
+  if (!clientPhone) {
+    console.error("[SMS] Client has no usable phone on file, skipping confirmation SMS", {
       merchantId: input.merchantId,
+      rawPhone: input.clientPhone,
     });
     return;
   }
@@ -106,7 +110,7 @@ export async function sendBookingConfirmedClientSms(input: BookingConfirmedSmsIn
     `${formatDateLong(input.startTime, input.timezone)} ora ${formatTime(input.startTime, input.timezone)} ` +
     `a fost confirmată!`;
 
-  const result = await sendSms(input.clientPhone, message);
+  const result = await sendSms(clientPhone, message);
   if (!result.success) {
     console.error("[SMS] Confirmation SMS to client failed", { merchantId: input.merchantId, error: result.error });
   }

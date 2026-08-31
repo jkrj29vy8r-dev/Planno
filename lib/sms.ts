@@ -7,6 +7,26 @@ export interface SendSmsResult {
 }
 
 /**
+ * Normalizes a Romanian phone number to E.164 (+40722123456) for the
+ * SMS provider, which needs one consistent format -- profiles.phone is
+ * free-text, and real users type "0722 123 456", "0722-123-456",
+ * "0040722123456", or already "+40722123456" interchangeably. Returns
+ * null for anything that isn't recognizably a 10-digit Romanian number
+ * in one of those forms, so the caller can skip sending rather than
+ * hand the provider something it will reject anyway.
+ */
+export function toRomanianE164(rawPhone: string): string | null {
+  const cleaned = rawPhone.replace(/[\s\-().]/g, "");
+
+  if (/^\+40\d{9}$/.test(cleaned)) return cleaned;
+  if (/^0040\d{9}$/.test(cleaned)) return `+40${cleaned.slice(4)}`;
+  if (/^40\d{9}$/.test(cleaned)) return `+${cleaned}`;
+  if (/^0\d{9}$/.test(cleaned)) return `+4${cleaned}`;
+
+  return null;
+}
+
+/**
  * No SMS provider is wired up yet -- SMS_API_KEY doesn't exist in this
  * project's environment, and no provider was specified, so this is a
  * generic bearer-token JSON POST (the shape most providers use), not a
