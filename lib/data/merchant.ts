@@ -46,6 +46,21 @@ export async function getMerchantBookingsInRange(
   return (data ?? []) as unknown as CalendarBooking[];
 }
 
+/** Every booking for this merchant, most recent first -- backs the
+ *  simple bookings list's "Toate" filter (Azi/Mâine are derived from
+ *  this same set client-side rather than issuing separate queries). */
+export async function getAllMerchantBookings(merchantId: string): Promise<CalendarBooking[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("bookings")
+    .select(CALENDAR_SELECT)
+    .eq("merchant_id", merchantId)
+    .order("start_time", { ascending: false });
+
+  if (error) throw error;
+  return (data ?? []) as unknown as CalendarBooking[];
+}
+
 export async function getMerchantServices(merchantId: string): Promise<Tables<"services">[]> {
   const supabase = await createClient();
   const { data, error } = await supabase

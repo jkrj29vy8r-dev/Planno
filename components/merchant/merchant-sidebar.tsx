@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Calendar, Clock, CreditCard, LayoutDashboard, Lock, LogOut, Scissors, Users } from "lucide-react";
+import { Calendar, ClipboardList, Clock, CreditCard, LayoutDashboard, Lock, LogOut, Scissors, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { signOutAction } from "@/lib/actions/auth";
 
 const NAV_ITEMS = [
   { href: "/merchant/dashboard", label: "Calendar", icon: Calendar, exact: true },
+  { href: "/merchant/dashboard/bookings", label: "Programări", icon: ClipboardList, exact: false },
   { href: "/merchant/dashboard/services", label: "Servicii", icon: Scissors, exact: false },
   { href: "/merchant/dashboard/program", label: "Program", icon: Clock, exact: false },
   { href: "/merchant/dashboard/clients", label: "Clienți", icon: Users, exact: false },
