@@ -42,12 +42,24 @@ export function TrustRow({ names, stats, className }: TrustRowProps) {
       )}
 
       <div className="flex flex-col gap-0.5">
-        <div className="flex items-center gap-1" aria-label="Rating mediu 4,9 din 5">
-          {[0, 1, 2, 3, 4].map((i) => (
-            <Star key={i} className="size-3.5 fill-accent text-accent" aria-hidden="true" />
-          ))}
-          <span className="ml-1 text-sm font-medium">4,9</span>
-        </div>
+        {stats.averageRating !== null && (
+          <div
+            className="flex items-center gap-1"
+            aria-label={`Rating mediu ${stats.averageRating.toFixed(1)} din 5`}
+          >
+            {[0, 1, 2, 3, 4].map((i) => (
+              <Star
+                key={i}
+                className={cn(
+                  "size-3.5",
+                  i < Math.round(stats.averageRating!) ? "fill-accent text-accent" : "text-muted-foreground/25",
+                )}
+                aria-hidden="true"
+              />
+            ))}
+            <span className="ml-1 text-sm font-medium">{stats.averageRating.toFixed(1).replace(".", ",")}</span>
+          </div>
+        )}
         <p className="text-sm text-muted-foreground">
           {stats.merchants} {stats.merchants === 1 ? "afacere activă" : "afaceri active"}
           {stats.cities > 0 && ` în ${stats.cities} ${stats.cities === 1 ? "oraș" : "orașe"}`} ·{" "}

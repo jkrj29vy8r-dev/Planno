@@ -1,4 +1,5 @@
 import { Sparkles } from "lucide-react";
+import { HeroAvatars } from "@/components/home/hero-avatars";
 import { HeroSearch } from "@/components/home/hero-search";
 import { HeroShowcase, type ShowcaseCategory } from "@/components/home/hero-showcase";
 import { PlanniTip } from "@/components/home/planni-tip";
@@ -11,6 +12,7 @@ interface HeroProps {
   merchants: MerchantListItem[];
   categories: string[];
   stats: PlatformStats;
+  reviewerNames: string[];
   initialQuery?: string;
   initialCity?: string;
 }
@@ -43,7 +45,7 @@ function buildShowcase(merchants: MerchantListItem[]): ShowcaseCategory[] {
   return Array.from(byCategory.values()).sort((a, b) => b.merchantCount - a.merchantCount);
 }
 
-export function Hero({ merchants, categories, stats, initialQuery, initialCity }: HeroProps) {
+export function Hero({ merchants, categories, stats, reviewerNames, initialQuery, initialCity }: HeroProps) {
   const showcase = buildShowcase(merchants);
   const hasShowcase = showcase.length > 0;
 
@@ -86,6 +88,12 @@ export function Hero({ merchants, categories, stats, initialQuery, initialCity }
         <div className="mt-9 w-full">
           <HeroSearch categories={categories} initialQuery={initialQuery} initialCity={initialCity} />
         </div>
+
+        <HeroAvatars
+          reviewerNames={reviewerNames}
+          averageRating={stats.averageRating}
+          ratingCount={stats.ratingCount}
+        />
 
         <div className="mt-5 hidden lg:flex">
           <PlanniTip />

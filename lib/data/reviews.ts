@@ -121,6 +121,36 @@ export async function getFeaturedReviews(limit: number): Promise<FeaturedReview[
   }
 }
 
+/**
+ * Display names for the homepage's avatar-stack social proof --
+ * anonymized the same way review cards are (first name + last
+ * initial), no comment required since an avatar strip doesn't quote
+ * anyone. Same RLS scoping as getFeaturedReviews: no merchant_id
+ * filter, so an anonymous visitor only ever sees reviews belonging to
+ * an active merchant.
+ */
+export async function getRecentReviewerNames(limit: number): Promise<string[]> {
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("reviews")
+      .select("client:profiles(full_name)")
+      .order("created_at", { ascending: false })
+      .limit(limit);
+
+    if (error) throw error;
+
+    type ReviewerRow = { client: Pick<Tables<"profiles">, "full_name"> | null };
+
+    return ((data ?? []) as unknown as ReviewerRow[])
+      .filter((row): row is ReviewerRow & { client: { full_name: string } } => Boolean(row.client))
+      .map((row) => reviewerDisplayName(row.client.full_name));
+  } catch (error) {
+    console.error("[Recenzii Platformă] Failed to fetch recent reviewer names", { error });
+    return [];
+  }
+}
+
 /** Which of this client's bookings already have a review -- fetched
  *  once for the whole history list (not per-card) so the "Lasă o
  *  recenzie" action can swap to "Recenzia ta" without an N+1 query, and

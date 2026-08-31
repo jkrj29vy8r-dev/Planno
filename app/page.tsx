@@ -10,7 +10,7 @@ import { MerchantCard } from "@/components/merchant-card";
 import { Planni } from "@/components/planni";
 import { getCurrentProfile } from "@/lib/data/auth";
 import { getMerchantFilterOptions, searchMerchants } from "@/lib/data/merchants";
-import { getFeaturedReviews } from "@/lib/data/reviews";
+import { getFeaturedReviews, getRecentReviewerNames } from "@/lib/data/reviews";
 import { getPlatformStats } from "@/lib/data/stats";
 
 interface DiscoverPageProps {
@@ -19,7 +19,7 @@ interface DiscoverPageProps {
 
 export default async function DiscoverPage({ searchParams }: DiscoverPageProps) {
   const params = await searchParams;
-  const [merchants, filterOptions, stats, allMerchants, profile, featuredReviews] = await Promise.all([
+  const [merchants, filterOptions, stats, allMerchants, profile, featuredReviews, reviewerNames] = await Promise.all([
     searchMerchants({ query: params.q, category: params.category, city: params.city }),
     getMerchantFilterOptions(),
     getPlatformStats(),
@@ -28,6 +28,7 @@ export default async function DiscoverPage({ searchParams }: DiscoverPageProps) 
     searchMerchants(),
     getCurrentProfile(),
     getFeaturedReviews(3),
+    getRecentReviewerNames(5),
   ]);
 
   const hasActiveFilters = Boolean(params.q || params.category || params.city);
@@ -44,6 +45,7 @@ export default async function DiscoverPage({ searchParams }: DiscoverPageProps) 
         merchants={allMerchants}
         categories={filterOptions.categories}
         stats={stats}
+        reviewerNames={reviewerNames}
         initialQuery={params.q}
         initialCity={params.city}
       />
