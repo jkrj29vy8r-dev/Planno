@@ -1,4 +1,4 @@
-import { Zap } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { HeroSearch } from "@/components/home/hero-search";
 import { HeroShowcase, type ShowcaseCategory } from "@/components/home/hero-showcase";
 import { PlanniTip } from "@/components/home/planni-tip";
@@ -63,10 +63,14 @@ export function Hero({ merchants, categories, stats, initialQuery, initialCity }
 
       <div className="mx-auto flex max-w-3xl flex-col items-center px-6 pb-16 pt-20 text-center lg:pb-24 lg:pt-28">
         <span className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/80 px-3.5 py-1.5 text-xs font-medium text-muted-foreground shadow-sm shadow-black/[0.03] backdrop-blur">
-          <Zap className="size-3.5 text-accent" aria-hidden="true" />
+          <span className="relative flex size-2 shrink-0" aria-hidden="true">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+            <span className="relative inline-flex size-2 rounded-full bg-emerald-500" />
+          </span>
           {stats.bookingsLast30Days > 0
             ? `${stats.bookingsLast30Days} rezervări în ultimele 30 de zile`
             : "Platformă de rezervări online în timp real"}
+          <Sparkles className="size-3.5 shrink-0 text-accent" aria-hidden="true" />
         </span>
 
         <h1 className="mt-6 max-w-2xl text-[2.75rem] font-semibold leading-[1.05] tracking-tight text-balance sm:text-6xl lg:text-[4rem]">
