@@ -3,6 +3,7 @@ import { SiteHeader } from "@/components/site-header";
 import { BottomNav } from "@/components/bottom-nav";
 import { Hero } from "@/components/home/hero";
 import { FounderLaunchSection } from "@/components/home/founder-launch-section";
+import { PartnerCta } from "@/components/home/partner-cta";
 import { ReviewsSection } from "@/components/home/reviews-section";
 import { MerchantSearch } from "@/components/merchant-search";
 import { MerchantCard } from "@/components/merchant-card";
@@ -94,6 +95,9 @@ export default async function DiscoverPage({ searchParams }: DiscoverPageProps) 
           </>
         )}
       </main>
+
+      {!platformIsEmpty && <PartnerCta />}
+
       <BottomNav isAuthenticated={Boolean(profile)} />
     </div>
   );
