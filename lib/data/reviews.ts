@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { reviewerDisplayName } from "@/lib/format";
 import type { Tables } from "@/types/database.types";
 
 export type ReviewWithAuthor = Tables<"reviews"> & {
@@ -58,6 +59,65 @@ export async function getMerchantReviewSummary(merchantId: string): Promise<Revi
   } catch (error) {
     console.error("[Profil Comerciant] Failed to fetch reviews", { id: merchantId, error });
     return { reviews: [], distribution: EMPTY_DISTRIBUTION, average: null, count: 0 };
+  }
+}
+
+export interface FeaturedReview {
+  id: string;
+  rating: number;
+  comment: string;
+  reviewerName: string;
+  merchantName: string;
+}
+
+/**
+ * Platform-wide social proof for the homepage -- the highest-rated,
+ * most recent reviews that have an actual comment (a bare star rating
+ * makes a poor quote card), across every merchant. Never fabricated
+ * copy: this is real testimonials or nothing, so the homepage section
+ * hides itself entirely once this returns an empty list rather than
+ * fall back to placeholder text.
+ *
+ * No merchant_id filter, so RLS alone decides visibility -- for an
+ * anonymous visitor that's "reviews_select_public_or_own", which only
+ * exposes reviews belonging to an active merchant.
+ */
+export async function getFeaturedReviews(limit: number): Promise<FeaturedReview[]> {
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("reviews")
+      .select("id, rating, comment, client:profiles(full_name), merchant:merchants(business_name)")
+      .not("comment", "is", null)
+      .gte("rating", 4)
+      .order("rating", { ascending: false })
+      .order("created_at", { ascending: false })
+      .limit(limit);
+
+    if (error) throw error;
+
+    type FeaturedReviewRow = {
+      id: string;
+      rating: number;
+      comment: string | null;
+      client: Pick<Tables<"profiles">, "full_name"> | null;
+      merchant: Pick<Tables<"merchants">, "business_name"> | null;
+    };
+
+    return ((data ?? []) as unknown as FeaturedReviewRow[])
+      .filter((row): row is FeaturedReviewRow & { comment: string; client: { full_name: string }; merchant: { business_name: string } } =>
+        Boolean(row.comment && row.client && row.merchant),
+      )
+      .map((row) => ({
+        id: row.id,
+        rating: row.rating,
+        comment: row.comment,
+        reviewerName: reviewerDisplayName(row.client.full_name),
+        merchantName: row.merchant.business_name,
+      }));
+  } catch (error) {
+    console.error("[Recenzii Platformă] Failed to fetch featured reviews", { error });
+    return [];
   }
 }
 

@@ -3,11 +3,13 @@ import { SiteHeader } from "@/components/site-header";
 import { BottomNav } from "@/components/bottom-nav";
 import { Hero } from "@/components/home/hero";
 import { FounderLaunchSection } from "@/components/home/founder-launch-section";
+import { ReviewsSection } from "@/components/home/reviews-section";
 import { MerchantSearch } from "@/components/merchant-search";
 import { MerchantCard } from "@/components/merchant-card";
 import { Planni } from "@/components/planni";
 import { getCurrentProfile } from "@/lib/data/auth";
 import { getMerchantFilterOptions, searchMerchants } from "@/lib/data/merchants";
+import { getFeaturedReviews } from "@/lib/data/reviews";
 import { getPlatformStats } from "@/lib/data/stats";
 
 interface DiscoverPageProps {
@@ -16,7 +18,7 @@ interface DiscoverPageProps {
 
 export default async function DiscoverPage({ searchParams }: DiscoverPageProps) {
   const params = await searchParams;
-  const [merchants, filterOptions, stats, allMerchants, profile] = await Promise.all([
+  const [merchants, filterOptions, stats, allMerchants, profile, featuredReviews] = await Promise.all([
     searchMerchants({ query: params.q, category: params.category, city: params.city }),
     getMerchantFilterOptions(),
     getPlatformStats(),
@@ -24,6 +26,7 @@ export default async function DiscoverPage({ searchParams }: DiscoverPageProps) 
     // applied to the results below it, so it never empties out mid-search.
     searchMerchants(),
     getCurrentProfile(),
+    getFeaturedReviews(3),
   ]);
 
   const hasActiveFilters = Boolean(params.q || params.category || params.city);
@@ -43,6 +46,8 @@ export default async function DiscoverPage({ searchParams }: DiscoverPageProps) 
         initialQuery={params.q}
         initialCity={params.city}
       />
+
+      <ReviewsSection reviews={featuredReviews} />
 
       <main id="rezultate" className="mx-auto max-w-6xl scroll-mt-20 px-6 py-12">
         {platformIsEmpty ? (
