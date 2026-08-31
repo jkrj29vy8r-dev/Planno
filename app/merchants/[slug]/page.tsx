@@ -3,7 +3,6 @@ import type { Metadata } from "next";
 import { SiteHeader } from "@/components/site-header";
 import { BottomNav } from "@/components/bottom-nav";
 import { MerchantProfileHero } from "@/components/merchant-profile-hero";
-import { MerchantProfileHeader } from "@/components/merchant-profile-header";
 import { MerchantProfileTabs } from "@/components/merchant-profile-tabs";
 import { getMerchantBySlug, type MerchantDetail } from "@/lib/data/merchants";
 import { getCurrentProfile } from "@/lib/data/auth";
@@ -69,8 +68,7 @@ export default async function MerchantPage({ params }: MerchantPageProps) {
       <SiteHeader />
       <MerchantProfileHero merchant={merchant} />
 
-      <main className="mx-auto max-w-5xl px-6">
-        <MerchantProfileHeader merchant={merchant} />
+      <main className="mx-auto max-w-5xl px-6 pt-6">
         <MerchantProfileTabs
           merchant={merchant}
           services={activeServices}

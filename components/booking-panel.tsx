@@ -109,7 +109,7 @@ export function BookingPanel({ merchant, services, isAuthenticated }: BookingPan
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
       {/* Click 1: pick a service */}
-      <div className="space-y-3">
+      <div className="min-w-0 space-y-3">
         {services.map((service) => {
           const isSelected = selectedService?.id === service.id;
           return (
@@ -117,15 +117,16 @@ export function BookingPanel({ merchant, services, isAuthenticated }: BookingPan
               key={service.id}
               type="button"
               onClick={() => handleSelectService(service)}
+              aria-pressed={isSelected}
               className={cn(
-                "group flex w-full items-center justify-between gap-4 rounded-xl border bg-card px-5 py-4 text-left transition-colors",
-                isSelected ? "border-accent ring-2 ring-ring" : "border-border/40 hover:border-border",
+                "flex w-full items-center justify-between gap-4 rounded-xl border px-5 py-4 text-left transition-all",
+                isSelected ? "border-accent bg-card shadow-lg shadow-accent/10" : "border-border/40 bg-card/50 hover:border-border",
               )}
             >
-              <div>
-                <p className="font-medium">{service.name}</p>
+              <div className="min-w-0">
+                <p className="truncate font-medium">{service.name}</p>
                 {service.description && (
-                  <p className="mt-0.5 text-sm text-muted-foreground">{service.description}</p>
+                  <p className="mt-0.5 line-clamp-2 text-sm text-muted-foreground">{service.description}</p>
                 )}
                 <p className="mt-1.5 flex items-center gap-1.5 text-xs text-muted-foreground">
                   <Clock className="size-3.5" />
@@ -133,25 +134,23 @@ export function BookingPanel({ merchant, services, isAuthenticated }: BookingPan
                 </p>
               </div>
               <div className="flex shrink-0 items-center gap-3">
-                <span className="text-sm font-semibold">{formatPrice(service.price, service.currency)}</span>
-                <span
+                <span className="text-sm font-semibold text-accent">{formatPrice(service.price, service.currency)}</span>
+                <div
                   className={cn(
-                    "flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors",
-                    isSelected
-                      ? "bg-accent text-accent-foreground"
-                      : "bg-muted text-foreground group-hover:bg-accent/10",
+                    "flex size-6 shrink-0 items-center justify-center rounded-full border transition-colors",
+                    isSelected ? "border-accent bg-accent text-accent-foreground" : "border-border",
                   )}
+                  aria-hidden="true"
                 >
-                  {isSelected && <Check className="size-3.5" />}
-                  {isSelected ? "Selectat" : "Rezervă"}
-                </span>
+                  {isSelected && <Check className="size-4 stroke-[3]" />}
+                </div>
               </div>
             </button>
           );
         })}
       </div>
 
-      <div className="lg:sticky lg:top-24 lg:self-start">
+      <div className="min-w-0 lg:sticky lg:top-24 lg:self-start">
         <Card>
           <CardContent className="space-y-5 pt-6">
             <AnimatePresence mode="wait">
