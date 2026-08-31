@@ -38,7 +38,6 @@ export default async function DiscoverPage({ searchParams }: DiscoverPageProps) 
 
       <Hero
         merchants={allMerchants}
-        cities={filterOptions.cities}
         categories={filterOptions.categories}
         stats={stats}
         initialQuery={params.q}

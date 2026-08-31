@@ -1,55 +1,36 @@
 "use client";
 
 import * as React from "react";
-import { AnimatePresence, motion } from "framer-motion";
 import { Planni } from "@/components/planni";
 
-/**
- * Planni leaning into the hero with a rotating suggestion. Purely
- * decorative and aria-hidden -- the tips repeat what the search bar and
- * category chips already offer, so a screen reader gains nothing from
- * hearing them cycle.
- */
-export function PlanniTip({ tips }: { tips: string[] }) {
-  const [index, setIndex] = React.useState(0);
-  const [mounted, setMounted] = React.useState(false);
+const SHOW_AFTER_MS = 1000;
 
-  // Deferred to the client so the server and first client render agree;
-  // the entrance animation then plays once, after paint.
-  React.useEffect(() => setMounted(true), []);
+/**
+ * Planni leaning into the hero with a one-time greeting bubble. Purely
+ * decorative and aria-hidden -- it echoes the "Ce vrei să programezi
+ * azi?" heading below the showcase, so a screen reader gains nothing
+ * from hearing it too.
+ */
+export function PlanniTip() {
+  const [show, setShow] = React.useState(false);
 
   React.useEffect(() => {
-    if (tips.length < 2) return;
-    const timer = setInterval(() => setIndex((i) => (i + 1) % tips.length), 4800);
-    return () => clearInterval(timer);
-  }, [tips.length]);
-
-  if (tips.length === 0) return null;
+    const timer = setTimeout(() => setShow(true), SHOW_AFTER_MS);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
-    <motion.div
-      aria-hidden="true"
-      initial={{ opacity: 0, y: 10 }}
-      animate={mounted ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
-      transition={{ duration: 0.5, delay: 0.6, ease: [0.16, 1, 0.3, 1] }}
-      className="pointer-events-none flex items-end gap-2.5"
-    >
+    <div aria-hidden="true" className="flex items-end gap-2.5">
       <Planni state="welcome" size={56} message="" className="shrink-0" />
 
-      <div className="glass-panel relative mb-1 rounded-2xl rounded-bl-sm px-3.5 py-2">
-        <AnimatePresence mode="wait">
-          <motion.p
-            key={index}
-            initial={{ opacity: 0, y: 4 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -4 }}
-            transition={{ duration: 0.28 }}
-            className="text-xs leading-snug text-muted-foreground"
-          >
-            {tips[index]}
-          </motion.p>
-        </AnimatePresence>
-      </div>
-    </motion.div>
+      {show && (
+        <div className="relative mb-1 animate-in fade-in zoom-in-90 duration-300">
+          <div className="relative rounded-xl bg-orange-500 px-3.5 py-2 text-xs font-bold text-black shadow-lg">
+            Ce programăm azi?
+            <div className="absolute -bottom-1.5 left-6 h-0 w-0 border-l-[5px] border-r-[5px] border-t-[6px] border-l-transparent border-r-transparent border-t-orange-500" />
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

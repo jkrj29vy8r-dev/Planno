@@ -9,7 +9,6 @@ import type { MerchantListItem } from "@/lib/data/merchants";
 
 interface HeroProps {
   merchants: MerchantListItem[];
-  cities: string[];
   categories: string[];
   stats: PlatformStats;
   initialQuery?: string;
@@ -44,24 +43,8 @@ function buildShowcase(merchants: MerchantListItem[]): ShowcaseCategory[] {
   return Array.from(byCategory.values()).sort((a, b) => b.merchantCount - a.merchantCount);
 }
 
-function buildTips(merchants: MerchantListItem[], cities: string[]): string[] {
-  const tips = ["Salut! Sunt Planni. Spune-mi ce cauți și găsesc orele libere."];
-
-  const featured = merchants[0];
-  if (featured) {
-    tips.push(`${featured.business_name} are ore libere săptămâna asta — merită o privire.`);
-  }
-  if (cities[0]) {
-    tips.push(`Caută după oraș: ${cities[0]} are cele mai multe afaceri pe Planno.`);
-  }
-  tips.push("Rezervi în 3 clickuri: alegi serviciul, ora, gata.");
-
-  return tips;
-}
-
-export function Hero({ merchants, cities, categories, stats, initialQuery, initialCity }: HeroProps) {
+export function Hero({ merchants, categories, stats, initialQuery, initialCity }: HeroProps) {
   const showcase = buildShowcase(merchants);
-  const tips = buildTips(merchants, cities);
   const hasShowcase = showcase.length > 0;
 
   return (
@@ -101,7 +84,7 @@ export function Hero({ merchants, cities, categories, stats, initialQuery, initi
         </div>
 
         <div className="mt-5 hidden lg:flex">
-          <PlanniTip tips={tips} />
+          <PlanniTip />
         </div>
 
         <div className="mt-8 flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-xs text-muted-foreground">
