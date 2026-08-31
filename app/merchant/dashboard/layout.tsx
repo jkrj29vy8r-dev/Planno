@@ -7,6 +7,7 @@ import { getMerchantSubscriptionAccess } from "@/lib/data/subscription";
 import { MerchantSidebar } from "@/components/merchant/merchant-sidebar";
 import { SubscriptionBanner } from "@/components/merchant/subscription-banner";
 import { SubscriptionPaywall } from "@/components/merchant/subscription-paywall";
+import { CreateBusinessForm } from "@/components/merchant/create-business-form";
 import { Planni } from "@/components/planni";
 import { buttonVariants } from "@/lib/button-variants";
 
@@ -18,15 +19,21 @@ export default async function MerchantDashboardLayout({ children }: { children: 
   const merchant = await getOwnedMerchant(profile.id);
   if (!merchant) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-background px-6 text-center">
-        <Planni state="empty-state" size={150} message="" />
-        <div className="space-y-1.5">
-          <p className="text-lg font-medium text-foreground">Nu ai încă o afacere înregistrată</p>
-          <p className="max-w-sm text-sm text-muted-foreground">
-            Contul tău are rol de comerciant, dar nu are nicio afacere asociată încă pe Planno.
-          </p>
+      <div className="flex min-h-screen flex-col items-center gap-8 bg-background px-6 py-16 text-center">
+        <div className="flex flex-col items-center gap-4">
+          <Planni state="welcome" size={120} message="" />
+          <div className="space-y-1.5">
+            <p className="text-lg font-medium text-foreground">Creează-ți afacerea pe Planno</p>
+            <p className="max-w-sm text-sm text-muted-foreground">
+              Contul tău are rol de comerciant. Completează câteva detalii ca să apari pe Planno și
+              clienții să poată rezerva la tine.
+            </p>
+          </div>
         </div>
-        <Link href="/" className={buttonVariants({ variant: "outline", size: "sm" })}>
+
+        <CreateBusinessForm />
+
+        <Link href="/" className={buttonVariants({ variant: "ghost", size: "sm" })}>
           Înapoi la Planno
         </Link>
       </div>
