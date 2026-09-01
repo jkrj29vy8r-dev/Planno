@@ -5,6 +5,7 @@ import { getCurrentProfile } from "@/lib/data/auth";
 import { getOwnedMerchant } from "@/lib/data/merchant";
 import { getMerchantSubscriptionAccess } from "@/lib/data/subscription";
 import { MerchantSidebar } from "@/components/merchant/merchant-sidebar";
+import { MerchantMobileNav } from "@/components/merchant/merchant-mobile-nav";
 import { SubscriptionBanner } from "@/components/merchant/subscription-banner";
 import { SubscriptionPaywall } from "@/components/merchant/subscription-paywall";
 import { CreateBusinessForm } from "@/components/merchant/create-business-form";
@@ -49,16 +50,24 @@ export default async function MerchantDashboardLayout({ children }: { children: 
   return (
     <div className="flex min-h-screen bg-background">
       <MerchantSidebar businessName={merchant.business_name} locked={isLocked} />
-      <main className="min-w-0 flex-1">
-        {isLocked ? (
-          <SubscriptionPaywall merchantId={merchant.id} access={access} />
-        ) : (
-          <>
-            <SubscriptionBanner access={access} />
-            {children}
-          </>
-        )}
-      </main>
+      {/* min-w-0 is load-bearing: without it a flex child won't shrink
+          below its content's natural width, and on mobile (where the
+          sidebar above is `hidden`) this column is the only flex item
+          left, so it must be free to take exactly 100% of the screen
+          rather than whatever its content happens to want. */}
+      <div className="flex min-w-0 flex-1 flex-col">
+        <MerchantMobileNav businessName={merchant.business_name} locked={isLocked} />
+        <main className="min-w-0 flex-1">
+          {isLocked ? (
+            <SubscriptionPaywall merchantId={merchant.id} access={access} />
+          ) : (
+            <>
+              <SubscriptionBanner access={access} />
+              {children}
+            </>
+          )}
+        </main>
+      </div>
     </div>
   );
 }
