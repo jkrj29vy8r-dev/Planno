@@ -39,7 +39,7 @@ export default async function DiscoverPage({ searchParams }: DiscoverPageProps) 
   const platformIsEmpty = allMerchants.length === 0;
 
   return (
-    <div className="min-h-screen bg-background pb-28 md:pb-0">
+    <div className="min-h-screen bg-background pb-32 md:pb-0">
       <AnnouncementBanner />
       <SiteHeader />
 

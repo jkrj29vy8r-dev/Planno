@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { MapPin, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { categoryLabel } from "@/lib/categories";
+import { ShimmerButton } from "@/components/magicui/shimmer-button";
 
 interface HeroSearchProps {
   /** Category ids that actually have merchants, rendered as quick chips
@@ -102,13 +103,14 @@ export function HeroSearch({ categories, initialQuery, initialCity }: HeroSearch
           />
         </div>
 
-        <button
+        <ShimmerButton
           type="submit"
           disabled={isPending}
-          className="mt-2 w-full shrink-0 rounded-xl bg-orange-500 px-6 py-3 text-sm font-semibold text-black shadow-lg shadow-orange-500/20 transition-all duration-200 hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-70 sm:mt-0 sm:w-auto sm:rounded-full"
+          shimmerDuration="2.2s"
+          className="mt-2 w-full shrink-0 px-6 py-3 text-sm font-semibold shadow-lg shadow-orange-500/20 sm:mt-0 sm:w-auto"
         >
           {isPending ? "Se caută..." : "Caută"}
-        </button>
+        </ShimmerButton>
       </form>
 
       {categories.length > 0 && (

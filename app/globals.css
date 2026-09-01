@@ -108,6 +108,49 @@
   --font-mono: var(--font-jetbrains-mono);
 }
 
+/* shimmer-slide/spin-around/border-beam keyframes, used by
+   components/magicui/shimmer-button.tsx and border-beam.tsx via an
+   inline `animation` shorthand on the animated element itself, not a
+   Tailwind `animate-*` utility class: Tailwind v4 compiles a
+   `@theme --animate-x` entry to `.animate-x { animation: var(--animate-x) }`,
+   and when that theme variable's own value contains a nested
+   `var(--speed, ...)`, Chromium resolves the nested var once against
+   :root rather than re-substituting it per element that actually uses
+   the utility class -- confirmed directly (getComputedStyle showed
+   --speed correctly inherited to 2.2s on the animated element, yet
+   animation-duration still computed from the 2.5s fallback). Plain
+   `@keyframes` have no such indirection: an inline `animation: spin-
+   around calc(var(--speed) * 2) ...` resolves var(--speed) directly
+   against the element it's set on. */
+@keyframes shimmer-slide {
+  to {
+    transform: translate(calc(100cqw - 100%), 0);
+  }
+}
+
+@keyframes spin-around {
+  0% {
+    transform: translateZ(0) rotate(0deg);
+  }
+  15%,
+  35% {
+    transform: translateZ(0) rotate(90deg);
+  }
+  65%,
+  85% {
+    transform: translateZ(0) rotate(270deg);
+  }
+  100% {
+    transform: translateZ(0) rotate(360deg);
+  }
+}
+
+@keyframes border-beam {
+  100% {
+    offset-distance: 100%;
+  }
+}
+
 @layer base {
   * {
     @apply border-border/40 outline-ring/50;

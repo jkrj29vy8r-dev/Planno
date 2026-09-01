@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { categoryLabel } from "@/lib/categories";
 import { categoryVisual } from "@/lib/category-visuals";
 import { CategoryIllustration } from "@/components/category-illustration";
+import { BorderBeam } from "@/components/magicui/border-beam";
 
 export interface ShowcaseCategory {
   id: string;
@@ -59,11 +60,18 @@ export function HeroShowcase({ categories }: { categories: ShowcaseCategory[] })
 
   return (
     <MotionConfig reducedMotion="user">
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {/* Bento layout: tile 0 (the top category) spans 2 columns and
+          both rows, the rest fill in around it -- lg:auto-rows-[13rem]
+          sizes every implicit row the same, so a row-span-2 tile comes
+          out exactly 2 rows + the gap tall with no per-tile height
+          math needed. Below lg:, rows aren't explicitly sized, so each
+          tile keeps its own height class instead. */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:auto-rows-[13rem]">
         {categories.slice(0, 4).map((category, index) => {
           const visual = categoryVisual(category.id);
           const isHovered = hovered === category.id;
           const isDimmed = hovered !== null && !isHovered;
+          const isFeatured = index === 0;
 
           return (
             <motion.div
@@ -73,11 +81,16 @@ export function HeroShowcase({ categories }: { categories: ShowcaseCategory[] })
               transition={{ duration: 0.5, delay: 0.1 + index * 0.08, ease: [0.16, 1, 0.3, 1] }}
               onMouseEnter={() => setHovered(category.id)}
               onMouseLeave={() => setHovered(null)}
+              className={cn(
+                isFeatured ? "sm:col-span-2 lg:col-span-2 lg:row-span-2" : "lg:col-span-1",
+                index === 1 && "lg:col-span-2",
+              )}
             >
               <Link
                 href={`/search?category=${category.id}`}
                 className={cn(
-                  "relative block h-40 overflow-hidden rounded-2xl border border-white/10 shadow-md transition-all duration-500",
+                  "relative block overflow-hidden rounded-3xl border border-zinc-800 bg-[#121215] shadow-md transition-all duration-500",
+                  isFeatured ? "h-56 sm:h-64 lg:h-full" : "h-48 lg:h-full",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
                   isDimmed ? "opacity-50 blur-[1px]" : "opacity-100",
                   isHovered && "border-orange-500/50 shadow-xl shadow-orange-500/10",
@@ -99,7 +112,11 @@ export function HeroShowcase({ categories }: { categories: ShowcaseCategory[] })
                     src={visual.photo}
                     alt=""
                     fill
-                    sizes="(min-width: 1024px) 22vw, (min-width: 640px) 45vw, 100vw"
+                    sizes={
+                      isFeatured
+                        ? "(min-width: 1024px) 45vw, 100vw"
+                        : "(min-width: 1024px) 22vw, (min-width: 640px) 45vw, 100vw"
+                    }
                     className={cn(
                       "object-cover transition-transform duration-700 ease-out",
                       isHovered && "scale-[1.08]",
@@ -122,17 +139,29 @@ export function HeroShowcase({ categories }: { categories: ShowcaseCategory[] })
                     them, which a translucent white badge especially
                     can't supply on its own the way the old solid-orange
                     pill could. */}
-                <div aria-hidden="true" className="absolute inset-0 bg-black/45" />
+                <div aria-hidden="true" className="absolute inset-0 bg-black/60" />
 
                 <div className="absolute inset-0 z-10 flex flex-col justify-between p-4">
                   <span className="w-fit rounded-full border border-white/20 bg-white/10 px-2 py-0.5 text-[10px] font-bold uppercase text-white backdrop-blur-sm">
                     {category.merchantCount} {category.merchantCount === 1 ? "locație" : "locații"}
                   </span>
                   <div>
-                    <h3 className="text-xl font-bold tracking-wide text-white">{showcaseTitle(category.id)}</h3>
+                    <h3
+                      className={cn(
+                        "font-bold tracking-wide text-white",
+                        isFeatured ? "text-2xl" : "text-xl",
+                      )}
+                    >
+                      {showcaseTitle(category.id)}
+                    </h3>
                     <p className="text-xs text-white/70">{showcaseTagline(category.id)}</p>
                   </div>
                 </div>
+
+                {/* The top category gets the marquee treatment -- a
+                    light beam tracing the tile's own border, the same
+                    rounded-3xl radius via rounded-[inherit]. */}
+                {isFeatured && <BorderBeam size={140} duration={7} />}
               </Link>
             </motion.div>
           );
