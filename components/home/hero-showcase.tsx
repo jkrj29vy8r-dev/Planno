@@ -89,7 +89,8 @@ export function HeroShowcase({ categories }: { categories: ShowcaseCategory[] })
               <Link
                 href={`/search?category=${category.id}`}
                 className={cn(
-                  "relative block overflow-hidden rounded-3xl border border-zinc-800 bg-[#121215] shadow-md transition-all duration-500",
+                  "relative block overflow-hidden rounded-2xl border border-zinc-800 bg-[#121215] shadow-md transition-all duration-500",
+                  "active:scale-[0.98] active:duration-150",
                   isFeatured ? "h-56 sm:h-64 lg:h-full" : "h-48 lg:h-full",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
                   isDimmed ? "opacity-50 blur-[1px]" : "opacity-100",
@@ -160,7 +161,7 @@ export function HeroShowcase({ categories }: { categories: ShowcaseCategory[] })
 
                 {/* The top category gets the marquee treatment -- a
                     light beam tracing the tile's own border, the same
-                    rounded-3xl radius via rounded-[inherit]. */}
+                    rounded-2xl radius via rounded-[inherit]. */}
                 {isFeatured && <BorderBeam size={140} duration={7} />}
               </Link>
             </motion.div>
