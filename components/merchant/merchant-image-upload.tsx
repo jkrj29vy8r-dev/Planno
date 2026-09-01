@@ -56,17 +56,27 @@ export function MerchantImageUpload({ merchantId, kind, initialUrl, label }: Mer
     setPreviewUrl(localUrl);
 
     setUploading(true);
-    const formData = new FormData();
-    formData.set("file", file);
-    const result = await uploadMerchantImageAction(merchantId, kind, formData);
-    setUploading(false);
+    try {
+      const formData = new FormData();
+      formData.set("file", file);
+      const result = await uploadMerchantImageAction(merchantId, kind, formData);
 
-    if (result.error) {
-      setError(result.error);
+      if (result.error) {
+        setError(result.error);
+        setPreviewUrl(initialUrl);
+        return;
+      }
+      if (result.url) setPreviewUrl(result.url);
+    } catch {
+      // A rejected/thrown action call (offline, or a Server Action
+      // reference gone stale after a redeploy) never reaches the
+      // {error} branch above -- without this the spinner below would
+      // spin forever with no way to retry.
+      setError("Nu am putut încărca imaginea. Verifică conexiunea și încearcă din nou.");
       setPreviewUrl(initialUrl);
-      return;
+    } finally {
+      setUploading(false);
     }
-    if (result.url) setPreviewUrl(result.url);
   }
 
   const isCover = kind === "cover";

@@ -34,29 +34,43 @@ export function MerchantGalleryManager({ merchantId, images }: { merchantId: str
     }
 
     setUploading(true);
-    const formData = new FormData();
-    formData.set("file", file);
-    const result = await addMerchantGalleryImageAction(merchantId, formData);
-    setUploading(false);
+    try {
+      const formData = new FormData();
+      formData.set("file", file);
+      const result = await addMerchantGalleryImageAction(merchantId, formData);
 
-    if (result.error) {
-      setError(result.error);
-      return;
+      if (result.error) {
+        setError(result.error);
+        return;
+      }
+      if (result.url) setGallery((prev) => [...prev, result.url!]);
+    } catch {
+      // A thrown/rejected action call (offline, or a stale Server
+      // Action reference after a redeploy) skips the {error} branch
+      // above -- without this the "Adaugă" tile's spinner would never
+      // clear.
+      setError("Nu am putut încărca imaginea. Verifică conexiunea și încearcă din nou.");
+    } finally {
+      setUploading(false);
     }
-    if (result.url) setGallery((prev) => [...prev, result.url!]);
   }
 
   async function handleRemove(url: string) {
     setError("");
     setRemovingUrl(url);
-    const result = await removeMerchantGalleryImageAction(merchantId, url);
-    setRemovingUrl(null);
+    try {
+      const result = await removeMerchantGalleryImageAction(merchantId, url);
 
-    if (result.error) {
-      setError(result.error);
-      return;
+      if (result.error) {
+        setError(result.error);
+        return;
+      }
+      setGallery((prev) => prev.filter((item) => item !== url));
+    } catch {
+      setError("Nu am putut elimina imaginea. Verifică conexiunea și încearcă din nou.");
+    } finally {
+      setRemovingUrl(null);
     }
-    setGallery((prev) => prev.filter((item) => item !== url));
   }
 
   return (

@@ -25,21 +25,30 @@ export function MerchantProfileForm({ merchant }: { merchant: Tables<"merchants"
     setError("");
     setSaved(false);
 
-    const result = await updateMerchantProfileAction(merchant.id, {
-      businessName,
-      category,
-      city,
-      address,
-      phone,
-      description,
-    });
+    try {
+      const result = await updateMerchantProfileAction(merchant.id, {
+        businessName,
+        category,
+        city,
+        address,
+        phone,
+        description,
+      });
 
-    setSaving(false);
-    if (result.error) {
-      setError(result.error);
-      return;
+      if (result.error) {
+        setError(result.error);
+        return;
+      }
+      setSaved(true);
+    } catch {
+      // A thrown/rejected action call (offline, or a stale Server
+      // Action reference after a redeploy) skips the {error} branch
+      // above -- without this "Salvează modificările" would spin
+      // forever with no way to retry.
+      setError("Nu am putut salva modificările. Verifică conexiunea și încearcă din nou.");
+    } finally {
+      setSaving(false);
     }
-    setSaved(true);
   }
 
   function onFieldChange<T extends (value: string) => void>(setter: T) {
