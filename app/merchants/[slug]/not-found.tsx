@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { SiteHeader } from "@/components/site-header";
+import { AnnouncementBanner } from "@/components/announcement-banner";
 import { Planni } from "@/components/planni";
 import { buttonVariants } from "@/lib/button-variants";
 
 export default function MerchantNotFound() {
   return (
     <div className="min-h-screen bg-background">
+      <AnnouncementBanner />
       <SiteHeader />
       <main className="mx-auto flex max-w-5xl flex-col items-center gap-4 px-6 py-24 text-center">
         <Planni state="empty-state" size={150} message="" />

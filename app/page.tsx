@@ -1,11 +1,11 @@
 import { Suspense } from "react";
 import { SiteHeader } from "@/components/site-header";
+import { AnnouncementBanner } from "@/components/announcement-banner";
 import { BottomNav } from "@/components/bottom-nav";
 import { Hero } from "@/components/home/hero";
 import { FounderLaunchSection } from "@/components/home/founder-launch-section";
 import { PartnerCta } from "@/components/home/partner-cta";
 import { ReviewsSection } from "@/components/home/reviews-section";
-import { WelcomeToast } from "@/components/home/welcome-toast";
 import { MerchantSearch } from "@/components/merchant-search";
 import { MerchantCard } from "@/components/merchant-card";
 import { Planni } from "@/components/planni";
@@ -40,14 +40,8 @@ export default async function DiscoverPage({ searchParams }: DiscoverPageProps) 
 
   return (
     <div className="min-h-screen bg-background pb-24 md:pb-0">
+      <AnnouncementBanner />
       <SiteHeader />
-      {/* Rendered here, not inside Hero: Hero's <section> is `isolate`,
-          which traps a `fixed` descendant inside Hero's own stacking
-          context -- SiteHeader's explicit z-40 then wins over the
-          toast's z-50 regardless, since z-index only competes within
-          the same context. Sibling to SiteHeader, it stacks at the
-          page root instead and actually renders on top. */}
-      <WelcomeToast />
 
       <Hero
         merchants={allMerchants}

@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { SiteHeader } from "@/components/site-header";
+import { AnnouncementBanner } from "@/components/announcement-banner";
 import { BottomNav } from "@/components/bottom-nav";
 import { MerchantSearch } from "@/components/merchant-search";
 import { MerchantCard } from "@/components/merchant-card";
@@ -31,6 +32,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 
   return (
     <div className="min-h-screen bg-background pb-24 md:pb-0">
+      <AnnouncementBanner />
       <SiteHeader />
 
       <main className="mx-auto max-w-6xl px-6 py-12">

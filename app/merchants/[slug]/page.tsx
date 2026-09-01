@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { SiteHeader } from "@/components/site-header";
+import { AnnouncementBanner } from "@/components/announcement-banner";
 import { BottomNav } from "@/components/bottom-nav";
 import { MerchantProfileHero } from "@/components/merchant-profile-hero";
 import { MerchantProfileTabs } from "@/components/merchant-profile-tabs";
@@ -65,6 +66,7 @@ export default async function MerchantPage({ params }: MerchantPageProps) {
 
   return (
     <div className={cn("min-h-screen bg-background md:pb-0", canBook ? "pb-40" : "pb-24")}>
+      <AnnouncementBanner />
       <SiteHeader />
       <MerchantProfileHero merchant={merchant} />
 

@@ -52,9 +52,8 @@ export function isNavItemActive(pathname: string, href: string): boolean {
  * the same 4 destinations added to SiteHeader's top navbar at md: and up
  * (DesktopNavLinks), so the two stay complementary with no gap where
  * neither shows. Deliberately dark chrome regardless of the site's own
- * light/dark theme, matching WelcomeToast's reasoning: a persistent
- * native-app tab bar reads as one fixed piece of chrome, not page
- * content that should flip with theme.
+ * light/dark theme: a persistent native-app tab bar reads as one fixed
+ * piece of chrome, not page content that should flip with theme.
  */
 export function BottomNav({ isAuthenticated }: BottomNavProps) {
   const pathname = usePathname();

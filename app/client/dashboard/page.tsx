@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { SiteHeader } from "@/components/site-header";
+import { AnnouncementBanner } from "@/components/announcement-banner";
 import { BottomNav } from "@/components/bottom-nav";
 import { DashboardTabs } from "@/components/dashboard-tabs";
 import { getCurrentProfile } from "@/lib/data/auth";
@@ -23,6 +24,7 @@ export default async function ClientDashboardPage() {
 
   return (
     <div className="min-h-screen bg-background pb-24 md:pb-0">
+      <AnnouncementBanner />
       <SiteHeader />
       <main className="mx-auto max-w-4xl px-6 py-12">
         <div className="mb-8">

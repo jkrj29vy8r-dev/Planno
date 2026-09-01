@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { CalendarCheck, LayoutDashboard, LogOut } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
+import { AnnouncementBanner } from "@/components/announcement-banner";
 import { BottomNav } from "@/components/bottom-nav";
 import { Card } from "@/components/ui/card";
 import { getCurrentProfile } from "@/lib/data/auth";
@@ -19,6 +20,7 @@ export default async function AccountPage() {
 
   return (
     <div className="min-h-screen bg-background pb-24 md:pb-12">
+      <AnnouncementBanner />
       <SiteHeader />
       <main className="mx-auto max-w-lg px-6 py-12">
         <div className="mb-8 flex items-center gap-4">
