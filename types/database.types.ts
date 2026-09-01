@@ -111,6 +111,7 @@ export type Database = {
           created_at: string
           description: string | null
           email: string | null
+          gallery_urls: string[]
           id: string
           is_active: boolean
           logo_url: string | null
@@ -134,6 +135,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           email?: string | null
+          gallery_urls?: string[]
           id?: string
           is_active?: boolean
           logo_url?: string | null
@@ -157,6 +159,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           email?: string | null
+          gallery_urls?: string[]
           id?: string
           is_active?: boolean
           logo_url?: string | null

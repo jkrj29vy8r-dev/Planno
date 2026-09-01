@@ -15,7 +15,11 @@ export function MerchantProfileHero({ merchant }: { merchant: MerchantDetail }) 
   const fullAddress = [merchant.address, merchant.city].filter(Boolean).join(", ");
 
   return (
-    <div className="relative h-56 w-full overflow-hidden sm:h-72 lg:h-80">
+    // A well-defined height per breakpoint (not an aspect-ratio box)
+    // plus object-cover object-center: the crop stays centered and the
+    // photo is never stretched, whatever aspect ratio the merchant
+    // uploaded, on any screen size including narrow mobile widths.
+    <div className="relative h-48 w-full overflow-hidden md:h-64">
       {merchant.cover_image_url ? (
         <Image
           src={merchant.cover_image_url}
@@ -23,7 +27,7 @@ export function MerchantProfileHero({ merchant }: { merchant: MerchantDetail }) 
           fill
           priority
           sizes="100vw"
-          className="object-cover"
+          className="object-cover object-center"
         />
       ) : (
         <CategoryIllustration category={merchant.category} />

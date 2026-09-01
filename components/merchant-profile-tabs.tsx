@@ -1,7 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { Tabs } from "@/components/ui/tabs";
+import Image from "next/image";
+import { Tabs, type TabItem } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { BookingPanel } from "@/components/booking-panel";
 import { ReviewSummary } from "@/components/review-summary";
@@ -13,7 +14,7 @@ import type { ReviewSummary as ReviewSummaryData } from "@/lib/data/reviews";
 import type { Tables } from "@/types/database.types";
 
 type Service = Tables<"services">;
-type TabId = "servicii" | "recenzii" | "despre";
+type TabId = "servicii" | "recenzii" | "despre" | "galerie";
 
 interface MerchantProfileTabsProps {
   merchant: MerchantDetail;
@@ -45,24 +46,27 @@ export function MerchantProfileTabs({
   const canBook = acceptsBookings && services.length > 0;
   const fromPrice = services.length > 0 ? Math.min(...services.map((s) => s.price)) : null;
   const currency = services[0]?.currency ?? "RON";
+  const galleryImages = merchant.gallery_urls;
 
   function goToServices() {
     setTab("servicii");
     document.getElementById("profil-tabs")?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
+  // Only shown once a merchant has actually uploaded photos -- an
+  // empty "Galerie" tab would just be a dead end for clients.
+  const tabItems: TabItem[] = [
+    { id: "servicii", label: "Servicii", count: services.length },
+    { id: "recenzii", label: "Recenzii", count: reviewSummary.count },
+    { id: "despre", label: "Despre" },
+  ];
+  if (galleryImages.length > 0) {
+    tabItems.push({ id: "galerie", label: "Galerie", count: galleryImages.length });
+  }
+
   return (
     <div id="profil-tabs" className="pb-4">
-      <Tabs
-        items={[
-          { id: "servicii", label: "Servicii", count: services.length },
-          { id: "recenzii", label: "Recenzii", count: reviewSummary.count },
-          { id: "despre", label: "Despre" },
-        ]}
-        active={tab}
-        onChange={(id) => setTab(id as TabId)}
-        className="mb-6"
-      />
+      <Tabs items={tabItems} active={tab} onChange={(id) => setTab(id as TabId)} className="mb-6" />
 
       {tab === "servicii" &&
         (canBook ? (
@@ -89,6 +93,8 @@ export function MerchantProfileTabs({
       )}
 
       {tab === "despre" && <AboutTab merchant={merchant} />}
+
+      {tab === "galerie" && <GalleryGrid images={galleryImages} businessName={merchant.business_name} />}
 
       {/* Mobile-only sticky conversion bar -- BookingPanel's own confirm
           button only appears once a slot is picked, this stays visible
@@ -178,6 +184,24 @@ function AboutTab({ merchant }: { merchant: MerchantDetail }) {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function GalleryGrid({ images, businessName }: { images: string[]; businessName: string }) {
+  return (
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+      {images.map((url) => (
+        <div key={url} className="relative aspect-square overflow-hidden rounded-xl border border-border/40 bg-muted">
+          <Image
+            src={url}
+            alt={businessName}
+            fill
+            sizes="(min-width: 640px) 33vw, 50vw"
+            className="object-cover object-center"
+          />
+        </div>
+      ))}
     </div>
   );
 }
