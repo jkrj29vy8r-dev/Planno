@@ -163,23 +163,6 @@
     @apply bg-popover/70 border border-border/40 shadow-xl shadow-black/[0.03] backdrop-blur-xl backdrop-saturate-150 dark:shadow-black/20;
   }
 
-  /* Hairline graph paper for the hero. Masked to an ellipse so the
-     lines fade out before they reach any edge -- a grid that runs to
-     the border reads as a table, not as depth. */
-  .hero-grid {
-    background-image:
-      linear-gradient(to right, var(--border) 1px, transparent 1px),
-      linear-gradient(to bottom, var(--border) 1px, transparent 1px);
-    background-size: 68px 68px;
-    opacity: 0.55;
-    -webkit-mask-image: radial-gradient(ellipse 75% 65% at 50% 0%, #000 35%, transparent 78%);
-    mask-image: radial-gradient(ellipse 75% 65% at 50% 0%, #000 35%, transparent 78%);
-  }
-
-  .dark .hero-grid {
-    opacity: 0.4;
-  }
-
   /* One focal light source for the hero, centered behind the search
      island instead of corner washes competing for attention. Keyed to
      --accent so it stays correct in both themes with no separate dark

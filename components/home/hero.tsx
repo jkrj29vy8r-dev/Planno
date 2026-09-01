@@ -50,12 +50,12 @@ export function Hero({ merchants, categories, stats, reviewerNames, initialQuery
 
   return (
     <section className="relative isolate overflow-hidden border-b border-border/40">
-      {/* Layered depth: a spotlight centered behind the search island,
-          a hairline grid for texture, and two faint corner washes --
-          all quiet enough to never fight the foreground for contrast. */}
+      {/* Layered depth: a spotlight centered behind the search island
+          and two faint corner washes -- quiet enough to never fight
+          the foreground for contrast. No grid texture: a clean, aired-
+          out dark surface reads better than technical grid lines. */}
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute inset-0 hero-spotlight" />
-        <div className="absolute inset-0 hero-grid" />
         <div className="absolute -left-40 -top-48 size-[34rem] rounded-full bg-accent/[0.08] blur-[120px]" />
         <div className="absolute -right-40 top-24 size-[30rem] rounded-full bg-[#2E6866]/[0.09] blur-[120px]" />
       </div>
