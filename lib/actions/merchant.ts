@@ -4,13 +4,7 @@ import { after } from "next/server";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { sendBookingConfirmedClientSms } from "@/lib/booking-sms";
-import {
-  MAX_GALLERY_IMAGES,
-  MAX_IMAGE_BYTES,
-  buildMerchantMediaPath,
-  isAllowedImageType,
-  storagePathFromPublicUrl,
-} from "@/lib/merchant-media";
+import { MAX_GALLERY_IMAGES, storagePathFromPublicUrl } from "@/lib/merchant-media";
 import type { Json, TablesUpdate } from "@/types/database.types";
 
 export interface MerchantActionState {
@@ -289,79 +283,62 @@ export async function updateMerchantProfileAction(
 
 type MerchantImageKind = "logo" | "cover";
 
-/** Shared upload+validate body for the logo/cover actions below --
- *  file kind and size are re-checked here even though the upload
- *  components already do the same check client-side, since that check
- *  is only ever a UX nicety and never the real gate. Returns the
- *  public URL on success so callers only need to decide which merchants
- *  column it belongs in. */
-async function uploadMerchantMedia(
-  kind: "logo" | "cover" | "gallery",
-  formData: FormData,
-): Promise<{ url: string } | { error: string }> {
-  const file = formData.get("file");
-  if (!(file instanceof File) || file.size === 0) {
-    return { error: "Alege o imagine." };
-  }
-  if (!isAllowedImageType(file.type)) {
-    return { error: "Format neacceptat. Folosește JPG, PNG sau WEBP." };
-  }
-  if (file.size > MAX_IMAGE_BYTES) {
-    return { error: "Imaginea este prea mare (maxim 5MB)." };
-  }
-
-  const supabase = await createClient();
+/**
+ * The file itself now uploads directly from the browser to Storage
+ * (see MerchantImageUpload/MerchantGalleryManager) instead of through
+ * here: Server Actions cap the request body at 1MB by default, well
+ * under a real phone photo, so routing file bytes through an action
+ * would silently reject exactly the uploads this feature exists for.
+ * These actions only ever receive the resulting public URL -- a few
+ * hundred bytes -- and this checks it actually belongs to the caller
+ * before trusting it into a merchants column. The bucket's own
+ * file_size_limit and allowed_mime_types (set in the
+ * merchant_profile_media migration) are what actually gate the
+ * upload now, the same way RLS gates a table write regardless of what
+ * the client claims.
+ */
+async function verifyOwnMediaUrl(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  url: string,
+): Promise<{ error: string } | null> {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) {
-    return { error: "Trebuie să fii autentificat." };
+  if (!user) return { error: "Trebuie să fii autentificat." };
+
+  const path = storagePathFromPublicUrl(url);
+  if (!path || !path.startsWith(`${user.id}/`)) {
+    return { error: "Imagine invalidă." };
   }
-
-  const path = buildMerchantMediaPath(user.id, kind, file.type);
-  const { error: uploadError } = await supabase.storage
-    .from("merchant-media")
-    .upload(path, file, { contentType: file.type });
-
-  if (uploadError) {
-    return { error: "Nu am putut încărca imaginea." };
-  }
-
-  const {
-    data: { publicUrl },
-  } = supabase.storage.from("merchant-media").getPublicUrl(path);
-
-  return { url: publicUrl };
+  return null;
 }
 
-export async function uploadMerchantImageAction(
+export async function setMerchantImageUrlAction(
   merchantId: string,
   kind: MerchantImageKind,
-  formData: FormData,
-): Promise<MerchantActionState & { url?: string }> {
-  const uploaded = await uploadMerchantMedia(kind, formData);
-  if ("error" in uploaded) {
-    return { error: uploaded.error };
-  }
-
+  url: string,
+): Promise<MerchantActionState> {
   const supabase = await createClient();
-  const update = kind === "logo" ? { logo_url: uploaded.url } : { cover_image_url: uploaded.url };
-  const { error: updateError } = await supabase.from("merchants").update(update).eq("id", merchantId);
+  const invalid = await verifyOwnMediaUrl(supabase, url);
+  if (invalid) return invalid;
 
-  if (updateError) {
-    return { error: "Imaginea s-a încărcat, dar nu am putut actualiza profilul." };
+  const update = kind === "logo" ? { logo_url: url } : { cover_image_url: url };
+  const { error } = await supabase.from("merchants").update(update).eq("id", merchantId);
+
+  if (error) {
+    return { error: "Nu am putut actualiza profilul." };
   }
 
   revalidatePath("/merchant/dashboard", "layout");
   revalidatePath("/merchants", "layout");
-  return { success: true, url: uploaded.url };
+  return { success: true };
 }
 
-export async function addMerchantGalleryImageAction(
-  merchantId: string,
-  formData: FormData,
-): Promise<MerchantActionState & { url?: string }> {
+export async function addMerchantGalleryUrlAction(merchantId: string, url: string): Promise<MerchantActionState> {
   const supabase = await createClient();
+  const invalid = await verifyOwnMediaUrl(supabase, url);
+  if (invalid) return invalid;
+
   const { data: merchant, error: fetchError } = await supabase
     .from("merchants")
     .select("gallery_urls")
@@ -371,27 +348,25 @@ export async function addMerchantGalleryImageAction(
   if (fetchError || !merchant) {
     return { error: "Nu am găsit afacerea." };
   }
+  // The client already checks this against its own local state before
+  // ever starting the upload; this is the authoritative re-check
+  // against a stale-state race, not the first line of defense.
   if (merchant.gallery_urls.length >= MAX_GALLERY_IMAGES) {
     return { error: `Poți adăuga maximum ${MAX_GALLERY_IMAGES} fotografii.` };
   }
 
-  const uploaded = await uploadMerchantMedia("gallery", formData);
-  if ("error" in uploaded) {
-    return { error: uploaded.error };
-  }
-
   const { error: updateError } = await supabase
     .from("merchants")
-    .update({ gallery_urls: [...merchant.gallery_urls, uploaded.url] })
+    .update({ gallery_urls: [...merchant.gallery_urls, url] })
     .eq("id", merchantId);
 
   if (updateError) {
-    return { error: "Imaginea s-a încărcat, dar nu am putut actualiza galeria." };
+    return { error: "Nu am putut actualiza galeria." };
   }
 
   revalidatePath("/merchant/dashboard", "layout");
   revalidatePath("/merchants", "layout");
-  return { success: true, url: uploaded.url };
+  return { success: true };
 }
 
 export async function removeMerchantGalleryImageAction(

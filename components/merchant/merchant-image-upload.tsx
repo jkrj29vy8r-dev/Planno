@@ -3,26 +3,35 @@
 import * as React from "react";
 import { Camera, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { uploadMerchantImageAction } from "@/lib/actions/merchant";
-import { ALLOWED_IMAGE_TYPES, MAX_IMAGE_BYTES, isAllowedImageType } from "@/lib/merchant-media";
+import { createClient } from "@/lib/supabase/client";
+import { setMerchantImageUrlAction } from "@/lib/actions/merchant";
+import { ALLOWED_IMAGE_TYPES, MAX_IMAGE_BYTES, buildMerchantMediaPath, isAllowedImageType } from "@/lib/merchant-media";
 
 interface MerchantImageUploadProps {
   merchantId: string;
+  ownerId: string;
   kind: "logo" | "cover";
   initialUrl: string | null;
   label: string;
 }
 
 /**
- * Logo and cover both go through the same upload action (they only
- * differ in which merchants column the URL lands in), so one component
- * covers both -- `kind` just changes the preview's shape. The cover
- * preview uses the exact h-48 md:h-64 + object-cover object-center
- * treatment MerchantProfileHero renders on the public profile, so what
- * a merchant sees while editing is what clients actually get, not an
+ * Logo and cover both go through the same flow (they only differ in
+ * which merchants column the URL lands in), so one component covers
+ * both -- `kind` just changes the preview's shape. The cover preview
+ * uses the exact h-48 md:h-64 + object-cover object-center treatment
+ * MerchantProfileHero renders on the public profile, so what a
+ * merchant sees while editing is what clients actually get, not an
  * approximation of it.
+ *
+ * The file uploads straight from the browser to Supabase Storage,
+ * not through a Server Action: actions cap the request body at 1MB by
+ * default, well under a real phone photo. Only the resulting public
+ * URL -- a few hundred bytes -- goes to the server, to record it on
+ * the merchant row.
  */
-export function MerchantImageUpload({ merchantId, kind, initialUrl, label }: MerchantImageUploadProps) {
+export function MerchantImageUpload({ merchantId, ownerId, kind, initialUrl, label }: MerchantImageUploadProps) {
+  const supabase = React.useMemo(() => createClient(), []);
   const inputRef = React.useRef<HTMLInputElement>(null);
   const objectUrlRef = React.useRef<string | null>(null);
   const [previewUrl, setPreviewUrl] = React.useState(initialUrl);
@@ -57,21 +66,33 @@ export function MerchantImageUpload({ merchantId, kind, initialUrl, label }: Mer
 
     setUploading(true);
     try {
-      const formData = new FormData();
-      formData.set("file", file);
-      const result = await uploadMerchantImageAction(merchantId, kind, formData);
+      const path = buildMerchantMediaPath(ownerId, kind, file.type);
+      const { error: uploadError } = await supabase.storage
+        .from("merchant-media")
+        .upload(path, file, { contentType: file.type });
 
+      if (uploadError) {
+        setError("Nu am putut încărca imaginea.");
+        setPreviewUrl(initialUrl);
+        return;
+      }
+
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("merchant-media").getPublicUrl(path);
+
+      const result = await setMerchantImageUrlAction(merchantId, kind, publicUrl);
       if (result.error) {
         setError(result.error);
         setPreviewUrl(initialUrl);
         return;
       }
-      if (result.url) setPreviewUrl(result.url);
+      setPreviewUrl(publicUrl);
     } catch {
-      // A rejected/thrown action call (offline, or a Server Action
-      // reference gone stale after a redeploy) never reaches the
-      // {error} branch above -- without this the spinner below would
-      // spin forever with no way to retry.
+      // Covers both a thrown Storage call (offline) and a thrown
+      // action call (a Server Action reference gone stale after a
+      // redeploy) -- without this the spinner below would spin
+      // forever with no way to retry.
       setError("Nu am putut încărca imaginea. Verifică conexiunea și încearcă din nou.");
       setPreviewUrl(initialUrl);
     } finally {

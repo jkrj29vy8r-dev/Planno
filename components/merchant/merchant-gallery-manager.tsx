@@ -2,14 +2,32 @@
 
 import * as React from "react";
 import { ImagePlus, Loader2, X } from "lucide-react";
-import { addMerchantGalleryImageAction, removeMerchantGalleryImageAction } from "@/lib/actions/merchant";
-import { ALLOWED_IMAGE_TYPES, MAX_GALLERY_IMAGES, MAX_IMAGE_BYTES, isAllowedImageType } from "@/lib/merchant-media";
+import { createClient } from "@/lib/supabase/client";
+import { addMerchantGalleryUrlAction, removeMerchantGalleryImageAction } from "@/lib/actions/merchant";
+import { ALLOWED_IMAGE_TYPES, MAX_GALLERY_IMAGES, MAX_IMAGE_BYTES, buildMerchantMediaPath, isAllowedImageType } from "@/lib/merchant-media";
 
-/** Add/remove tiles for merchants.gallery_urls -- kept as one flat
- *  array on the merchant row rather than a table of its own, so
- *  "current gallery" is just local state seeded from the server and
- *  patched in place on each add/remove, no refetch needed. */
-export function MerchantGalleryManager({ merchantId, images }: { merchantId: string; images: string[] }) {
+/**
+ * Add/remove tiles for merchants.gallery_urls -- kept as one flat
+ * array on the merchant row rather than a table of its own, so
+ * "current gallery" is just local state seeded from the server and
+ * patched in place on each add/remove, no refetch needed.
+ *
+ * Uploads go straight from the browser to Supabase Storage, not
+ * through a Server Action: actions cap the request body at 1MB by
+ * default, well under a real phone photo. Only the resulting public
+ * URL -- a few hundred bytes -- goes to the server, to append it to
+ * gallery_urls.
+ */
+export function MerchantGalleryManager({
+  merchantId,
+  ownerId,
+  images,
+}: {
+  merchantId: string;
+  ownerId: string;
+  images: string[];
+}) {
+  const supabase = React.useMemo(() => createClient(), []);
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [gallery, setGallery] = React.useState(images);
   const [uploading, setUploading] = React.useState(false);
@@ -24,6 +42,10 @@ export function MerchantGalleryManager({ merchantId, images }: { merchantId: str
     if (!file) return;
 
     setError("");
+    if (atLimit) {
+      setError(`Poți adăuga maximum ${MAX_GALLERY_IMAGES} fotografii.`);
+      return;
+    }
     if (!isAllowedImageType(file.type)) {
       setError("Format neacceptat. Folosește JPG, PNG sau WEBP.");
       return;
@@ -35,20 +57,31 @@ export function MerchantGalleryManager({ merchantId, images }: { merchantId: str
 
     setUploading(true);
     try {
-      const formData = new FormData();
-      formData.set("file", file);
-      const result = await addMerchantGalleryImageAction(merchantId, formData);
+      const path = buildMerchantMediaPath(ownerId, "gallery", file.type);
+      const { error: uploadError } = await supabase.storage
+        .from("merchant-media")
+        .upload(path, file, { contentType: file.type });
 
+      if (uploadError) {
+        setError("Nu am putut încărca imaginea.");
+        return;
+      }
+
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("merchant-media").getPublicUrl(path);
+
+      const result = await addMerchantGalleryUrlAction(merchantId, publicUrl);
       if (result.error) {
         setError(result.error);
         return;
       }
-      if (result.url) setGallery((prev) => [...prev, result.url!]);
+      setGallery((prev) => [...prev, publicUrl]);
     } catch {
-      // A thrown/rejected action call (offline, or a stale Server
-      // Action reference after a redeploy) skips the {error} branch
-      // above -- without this the "Adaugă" tile's spinner would never
-      // clear.
+      // Covers both a thrown Storage call (offline) and a thrown
+      // action call (a Server Action reference gone stale after a
+      // redeploy) -- without this the "Adaugă" tile's spinner would
+      // never clear.
       setError("Nu am putut încărca imaginea. Verifică conexiunea și încearcă din nou.");
     } finally {
       setUploading(false);

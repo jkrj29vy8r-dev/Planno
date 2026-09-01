@@ -29,6 +29,7 @@ export default async function MerchantProfilePage() {
         <CardContent className="flex flex-col gap-6 sm:flex-row sm:items-start">
           <MerchantImageUpload
             merchantId={merchant.id}
+            ownerId={profile.id}
             kind="logo"
             initialUrl={merchant.logo_url}
             label="Schimbă logo-ul"
@@ -36,6 +37,7 @@ export default async function MerchantProfilePage() {
           <div className="flex-1">
             <MerchantImageUpload
               merchantId={merchant.id}
+              ownerId={profile.id}
               kind="cover"
               initialUrl={merchant.cover_image_url}
               label="Schimbă poza de copertă"
@@ -61,7 +63,7 @@ export default async function MerchantProfilePage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <MerchantGalleryManager merchantId={merchant.id} images={merchant.gallery_urls} />
+          <MerchantGalleryManager merchantId={merchant.id} ownerId={profile.id} images={merchant.gallery_urls} />
         </CardContent>
       </Card>
     </div>
