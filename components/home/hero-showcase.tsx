@@ -83,13 +83,11 @@ export function HeroShowcase({ categories }: { categories: ShowcaseCategory[] })
                   isHovered && "border-orange-500/50 shadow-xl shadow-orange-500/10",
                 )}
               >
-                {/* Category's own two-tone gradient, always the base
-                    layer now (not just a loading/failure backdrop): the
-                    photo sits at opacity-40 over it on purpose, so the
-                    brand color tints the whole tile instead of being
-                    fully hidden behind the photo -- categories keep
-                    reading as visually distinct even though every tile
-                    now shares the same dark, muted treatment. */}
+                {/* Category's own two-tone gradient -- the loading
+                    backdrop for the photo case, and the entire visual
+                    for categories with no curated photo yet (via
+                    CategoryIllustration below), so those still read as
+                    a fully-designed tile instead of a flat dark box. */}
                 <div
                   aria-hidden="true"
                   className="absolute inset-0"
@@ -103,7 +101,7 @@ export function HeroShowcase({ categories }: { categories: ShowcaseCategory[] })
                     fill
                     sizes="(min-width: 1024px) 22vw, (min-width: 640px) 45vw, 100vw"
                     className={cn(
-                      "object-cover opacity-40 transition-transform duration-700 ease-out",
+                      "object-cover transition-transform duration-700 ease-out",
                       isHovered && "scale-[1.08]",
                     )}
                   />
@@ -119,8 +117,15 @@ export function HeroShowcase({ categories }: { categories: ShowcaseCategory[] })
                   />
                 )}
 
+                {/* Dark overlay for legibility -- both the frosted
+                    badge and the bottom text need real contrast under
+                    them, which a translucent white badge especially
+                    can't supply on its own the way the old solid-orange
+                    pill could. */}
+                <div aria-hidden="true" className="absolute inset-0 bg-black/45" />
+
                 <div className="absolute inset-0 z-10 flex flex-col justify-between p-4">
-                  <span className="w-fit rounded-full bg-orange-500/80 px-2 py-0.5 text-[10px] font-bold uppercase text-white backdrop-blur-sm">
+                  <span className="w-fit rounded-full border border-white/20 bg-white/10 px-2 py-0.5 text-[10px] font-bold uppercase text-white backdrop-blur-sm">
                     {category.merchantCount} {category.merchantCount === 1 ? "locație" : "locații"}
                   </span>
                   <div>

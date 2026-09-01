@@ -66,10 +66,10 @@ export function BottomNav({ isAuthenticated }: BottomNavProps) {
   return (
     <nav
       aria-label="Navigare principală"
-      className="fixed inset-x-0 z-40 flex justify-center px-4 md:hidden"
+      className="fixed inset-x-4 z-40 md:hidden"
       style={{ bottom: "calc(1rem + env(safe-area-inset-bottom))" }}
     >
-      <div className="flex w-full max-w-sm items-center justify-around rounded-full border border-white/10 bg-zinc-900/85 p-2 shadow-2xl backdrop-blur-lg">
+      <div className="flex items-center justify-around rounded-full border border-white/10 bg-black/60 p-2 shadow-2xl backdrop-blur-md">
         {items.map((item) => {
           const isActive = isNavItemActive(pathname, item.href);
           const Icon = item.icon;

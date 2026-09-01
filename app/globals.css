@@ -39,20 +39,28 @@
 }
 
 .dark {
-  --background: oklch(0.145 0.004 60);
+  /* Linear-style near-black surfaces -- exact hex, not oklch like the
+     rest of this file, so the requested values (#09090B/#121215) stay
+     literally traceable in the source rather than passing through an
+     approximate conversion. popover matches card (Modal/Dropdown read
+     as the same surface as any other card) and input matches border
+     (they were already near-identical in the previous scale, and
+     border moving to a cooler true zinc-800 would otherwise leave
+     input fields visibly mismatched against every other border). */
+  --background: #09090b;
   --foreground: oklch(0.96 0.003 70);
 
-  --card: oklch(0.185 0.0045 60);
+  --card: #121215;
   --card-foreground: oklch(0.96 0.003 70);
 
-  --popover: oklch(0.175 0.0045 60);
+  --popover: #121215;
   --popover-foreground: oklch(0.96 0.003 70);
 
   --muted: oklch(0.23 0.004 60);
   --muted-foreground: oklch(0.65 0.006 60);
 
-  --border: oklch(0.3 0.005 60);
-  --input: oklch(0.32 0.0055 60);
+  --border: #27272a;
+  --input: #27272a;
 
   --accent: oklch(0.66 0.165 43);
   --accent-foreground: oklch(0.99 0.005 70);
@@ -96,7 +104,7 @@
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
 
-  --font-sans: var(--font-inter);
+  --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-jetbrains-mono);
 }
 

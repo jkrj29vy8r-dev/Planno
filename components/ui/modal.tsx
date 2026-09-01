@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
+import { Drawer } from "vaul";
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -12,14 +13,66 @@ export interface ModalProps {
   children: React.ReactNode;
 }
 
+/** Below Tailwind's `md` breakpoint (768px), matching every other
+ *  desktop/mobile split in this app. Only ever read once a modal is
+ *  actually opened by a user action well after hydration, so there's
+ *  no SSR-mismatch window to worry about despite reading `window`
+ *  directly in the initializer. */
+function useIsMobile(): boolean {
+  const [isMobile, setIsMobile] = React.useState(
+    () => typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches,
+  );
+
+  React.useEffect(() => {
+    const mql = window.matchMedia("(max-width: 767px)");
+    const handleChange = (event: MediaQueryListEvent) => setIsMobile(event.matches);
+    mql.addEventListener("change", handleChange);
+    return () => mql.removeEventListener("change", handleChange);
+  }, []);
+
+  return isMobile;
+}
+
 /**
- * Controlled dialog. The centering wrapper below is a plain flex div
- * (not a translate(-50%,-50%) utility) on purpose: framer-motion owns
- * the `transform` of the animated card for its enter/exit, and a
- * transform-based centering utility on that same element would fight
- * it and get silently overwritten every frame.
+ * Controlled dialog -- a centered card on desktop, an iOS-style
+ * vaul bottom sheet below `md`. These are two genuinely different
+ * component trees (Radix Dialog vs. vaul's Drawer, which wraps Radix
+ * Dialog itself), not one tree restyled with breakpoint classes, so
+ * `useIsMobile` picks between them entirely in JS rather than CSS --
+ * there's no way to make a single element "become" the other at a
+ * media query. ModalHeader/Title/Description/Footer/Close below are
+ * shared by both paths unchanged: vaul's Content wraps a real
+ * DialogPrimitive.Content under the hood, so DialogPrimitive.Title's
+ * context lookup resolves correctly either way.
  */
 export function Modal({ open, onOpenChange, children }: ModalProps) {
+  const isMobile = useIsMobile();
+
+  if (isMobile) {
+    return (
+      <Drawer.Root open={open} onOpenChange={onOpenChange} shouldScaleBackground>
+        <Drawer.Portal>
+          <Drawer.Overlay className="fixed inset-0 z-50 bg-background/60 backdrop-blur-sm" />
+          <Drawer.Content className="glass-panel fixed inset-x-0 bottom-0 z-50 flex max-h-[85vh] flex-col rounded-t-2xl focus:outline-none">
+            <div className="mx-auto mt-3 h-1.5 w-10 shrink-0 rounded-full bg-muted-foreground/25" aria-hidden="true" />
+            <div className="relative overflow-y-auto p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
+              {children}
+              <Drawer.Close asChild>
+                <button
+                  type="button"
+                  aria-label="Închide"
+                  className="absolute right-4 top-4 rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <X className="size-4" aria-hidden="true" />
+                </button>
+              </Drawer.Close>
+            </div>
+          </Drawer.Content>
+        </Drawer.Portal>
+      </Drawer.Root>
+    );
+  }
+
   return (
     <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
       <AnimatePresence>
