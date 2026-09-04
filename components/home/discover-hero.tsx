@@ -50,10 +50,10 @@ function locationLabel(count: number): string {
 }
 
 const SEARCH_PLACEHOLDERS = [
-  "Vrei un teren de padel?",
-  "Cauți o frizerie?",
-  "Programează-te la salon...",
-  "Căutare servicii de transport...",
+  "Vrei un teren de padel azi?",
+  "Cauți un stilist sau o frizerie?",
+  "Programează o ședință la salon...",
+  "Caută servicii de transport...",
 ];
 
 const PLACEHOLDER_CYCLE_MS = 3200;
@@ -158,7 +158,7 @@ export function DiscoverHero({
             <Link
               href="/login"
               aria-label="Autentificare"
-              className="flex size-10 items-center justify-center rounded-full border border-border bg-card text-muted-foreground transition hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="flex size-10 items-center justify-center rounded-full border border-white/10 bg-card text-muted-foreground transition hover:border-zinc-700 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <CircleUserRound className="size-5" strokeWidth={1.7} />
             </Link>
@@ -167,12 +167,17 @@ export function DiscoverHero({
       </header>
 
       <section className="pt-16 sm:pt-24">
-        <h1 className="max-w-2xl text-balance text-4xl font-semibold tracking-[-0.06em] text-white sm:text-6xl">
-          Rezervă instant serviciile tale preferate.
+        <p className="mb-4 inline-flex rounded-full border border-white/10 bg-zinc-950/60 px-3 py-1.5 text-xs font-medium text-zinc-300 backdrop-blur-xl">
+          Experiențe &amp; Rezervări Instant
+        </p>
+
+        <h1 className="max-w-2xl text-balance bg-gradient-to-r from-white via-zinc-200 to-zinc-400 bg-clip-text text-4xl font-semibold tracking-[-0.06em] text-transparent sm:text-6xl">
+          Cât ai zice Planno.
         </h1>
 
         <p className="mt-5 max-w-md text-pretty text-sm leading-6 text-zinc-400 sm:text-base">
-          De la terenuri de padel și frizerii, până la saloane și transport — simplu și rapid.
+          Locul tău pe terenul de padel, la frizerie sau la salon — rezervat în câteva secunde, fără apeluri
+          telefonice.
         </p>
 
         {stats.bookingsLast30Days > 0 && (
@@ -214,10 +219,14 @@ export function DiscoverHero({
       <form
         onSubmit={handleSubmit}
         aria-label="Caută și filtrează"
-        className="mt-10 flex min-h-14 items-center divide-x divide-zinc-800 overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950/70 shadow-[0_0_0_1px_rgba(63,63,70,0.12)] backdrop-blur-xl"
+        className="group mt-10 flex min-h-16 items-center divide-x divide-white/10 overflow-hidden rounded-2xl border border-white/10 bg-zinc-950/70 shadow-[0_0_0_1px_rgba(63,63,70,0.12)] backdrop-blur-2xl transition focus-within:border-zinc-600/80 focus-within:shadow-[0_0_24px_rgba(113,113,122,0.12)]"
       >
         <label className="flex min-w-0 flex-1 items-center gap-3 px-4">
-          <Search className="size-5 shrink-0 text-muted-foreground" strokeWidth={1.8} aria-hidden="true" />
+          <Search
+            className="size-5 shrink-0 text-muted-foreground transition group-focus-within:text-zinc-300"
+            strokeWidth={1.8}
+            aria-hidden="true"
+          />
           <span className="sr-only">Caută categorii</span>
           <input
             value={query}
@@ -272,7 +281,7 @@ export function DiscoverHero({
             <Link
               key={tile.id}
               href={`/search?category=${tile.id}`}
-              className="group relative aspect-[0.86] overflow-hidden rounded-2xl border border-zinc-800 bg-[#121215] text-left shadow-[0_0_0_1px_rgba(63,63,70,0.08)] transition duration-200 hover:border-zinc-700 hover:shadow-[0_0_0_1px_rgba(82,82,91,0.45),0_12px_32px_rgba(0,0,0,0.22)] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="group relative aspect-[0.86] overflow-hidden rounded-2xl border border-zinc-800/80 bg-[#121215] text-left shadow-[0_0_0_1px_rgba(63,63,70,0.08)] transition duration-200 hover:border-zinc-700 hover:shadow-[0_0_0_1px_rgba(82,82,91,0.5),0_16px_40px_rgba(0,0,0,0.25)] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               {visual.photo ? (
                 <Image
