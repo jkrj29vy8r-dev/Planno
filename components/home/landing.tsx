@@ -8,7 +8,6 @@ import { ArrowRight, MapPin, Search, Star } from "lucide-react";
 import { CategoryIllustration } from "@/components/category-illustration";
 import { Planni } from "@/components/planni";
 import { categoryLabel } from "@/lib/categories";
-import { categoryVisual } from "@/lib/category-visuals";
 import { formatPrice } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { MerchantFilterOptions, MerchantListItem } from "@/lib/data/merchants";
@@ -36,23 +35,55 @@ const SEARCH_PROMPTS = [
 const PROMPT_CYCLE_MS = 2600;
 const PARTNER_LIMIT = 6;
 
-/** Every real, browsable category ("altele" is a merchant-classification
- *  catch-all, not something to showcase as its own tile), in a fixed
- *  display order -- shown always, not just once a merchant exists in
- *  it, so the grid reads as the platform's full breadth from day one
- *  instead of shrinking to whatever happens to have listings yet. */
-const LANDING_CATEGORY_IDS = ["salon", "barbershop", "spa", "fitness", "wellness", "padel", "auto", "transport"];
-
-const CATEGORY_TAGLINES: Record<string, string> = {
-  salon: "Relaxare & înfrumusețare",
-  barbershop: "Tuns & bărbierit clasic",
-  spa: "Masaj & tratamente relaxante",
-  fitness: "Antrenamente & clase",
-  wellness: "Terapii & recuperare",
-  padel: "Terenuri & partide",
-  auto: "Servicii auto",
-  transport: "Curse & transport local",
-};
+/** The exact 7 tiles from the v0 reference -- title, caption and photo
+ *  verbatim, not adapted to this schema's own category taxonomy. Each
+ *  still points at the closest real category for the click-through
+ *  (so "Sporturi" lands on real padel listings, not a dead filter),
+ *  but the content shown is the literal reference content. */
+const LANDING_CATEGORIES = [
+  {
+    title: "Sporturi",
+    meta: "Terenuri & activități",
+    image: "https://images.unsplash.com/photo-1622163642998-1ea32b0bbc67?auto=format&fit=crop&w=900&q=80",
+    categoryId: "padel",
+  },
+  {
+    title: "Frizerii",
+    meta: "Servicii locale",
+    image: "https://images.unsplash.com/photo-1599351431202-1e0f0137899a?auto=format&fit=crop&w=900&q=80",
+    categoryId: "barbershop",
+  },
+  {
+    title: "Saloane",
+    meta: "Relaxare & îngrijire",
+    image: "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=900&q=80",
+    categoryId: "salon",
+  },
+  {
+    title: "Wellness",
+    meta: "Masaj, stretching & recuperare",
+    image: "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=900&q=80",
+    categoryId: "wellness",
+  },
+  {
+    title: "Dans & mișcare",
+    meta: "Clase & antrenamente",
+    image: "https://images.unsplash.com/photo-1508807526345-15e9b5f4eaff?auto=format&fit=crop&w=900&q=80",
+    categoryId: "fitness",
+  },
+  {
+    title: "Transport",
+    meta: "În curând",
+    image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=900&q=80",
+    categoryId: "transport",
+  },
+  {
+    title: "Auto",
+    meta: "Servicii auto",
+    image: "https://images.unsplash.com/photo-1486006920555-c77dcf18193c?auto=format&fit=crop&w=900&q=80",
+    categoryId: "auto",
+  },
+];
 
 function buildSearchHref(query: string, city: string): string {
   const params = new URLSearchParams();
@@ -102,18 +133,9 @@ export function Landing({
   const term = query.trim().toLowerCase();
 
   const categories = React.useMemo(() => {
-    const counts = new Map<string, number>();
-    for (const merchant of inCity) {
-      counts.set(merchant.category, (counts.get(merchant.category) ?? 0) + 1);
-    }
-    const tiles = LANDING_CATEGORY_IDS.map((id) => ({ id, count: counts.get(id) ?? 0 }));
-    if (!term) return tiles;
-    // Matches the slug too: Romanian labels pluralize irregularly
-    // (salon -> Saloane), so "salon" would miss on the label alone.
-    return tiles.filter(
-      (tile) => categoryLabel(tile.id).toLowerCase().includes(term) || tile.id.toLowerCase().includes(term),
-    );
-  }, [inCity, term]);
+    if (!term) return LANDING_CATEGORIES;
+    return LANDING_CATEGORIES.filter((tile) => tile.title.toLowerCase().includes(term));
+  }, [term]);
 
   const partners = React.useMemo(() => {
     const matches = inCity.filter((merchant) => {
@@ -256,40 +278,30 @@ export function Landing({
             </p>
           ) : (
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-              {categories.map((tile) => {
-                const visual = categoryVisual(tile.id);
-                return (
-                  <Link
-                    key={tile.id}
-                    href={`/search?category=${tile.id}`}
-                    className="group relative block h-44 overflow-hidden rounded-2xl border border-border text-left transition-colors hover:border-[#56a9a5]/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  >
-                    {visual.photo ? (
-                      <Image
-                        src={visual.photo}
-                        alt=""
-                        fill
-                        sizes="(min-width: 1024px) 20vw, (min-width: 640px) 33vw, 50vw"
-                        className="object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
-                    ) : (
-                      <CategoryIllustration
-                        category={tile.id}
-                        className="transition-transform duration-500 group-hover:scale-105"
-                      />
-                    )}
+              {categories.map((tile) => (
+                <Link
+                  key={tile.title}
+                  href={`/search?category=${tile.categoryId}`}
+                  className="group relative block h-44 overflow-hidden rounded-2xl border border-border text-left transition-colors hover:border-[#56a9a5]/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <Image
+                    src={tile.image}
+                    alt={tile.title}
+                    fill
+                    sizes="(min-width: 1024px) 20vw, (min-width: 640px) 33vw, 50vw"
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
 
-                    <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
+                  <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
 
-                    <div className="absolute inset-x-4 bottom-4">
-                      <span className="text-[10px] font-semibold uppercase tracking-wider text-[#b9d9e8]">
-                        {tile.count > 0 ? (CATEGORY_TAGLINES[tile.id] ?? categoryLabel(tile.id)) : "În curând"}
-                      </span>
-                      <h3 className="mt-1 text-xl font-semibold text-white">{categoryLabel(tile.id)}</h3>
-                    </div>
-                  </Link>
-                );
-              })}
+                  <div className="absolute inset-x-4 bottom-4">
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-[#b9d9e8]">
+                      {tile.meta}
+                    </span>
+                    <h3 className="mt-1 text-xl font-semibold text-white">{tile.title}</h3>
+                  </div>
+                </Link>
+              ))}
             </div>
           )}
         </section>
