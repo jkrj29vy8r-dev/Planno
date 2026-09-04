@@ -4,7 +4,7 @@ import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Clock3, MapPin, Search, Star } from "lucide-react";
+import { ArrowRight, MapPin, Search, Star } from "lucide-react";
 import { CategoryIllustration } from "@/components/category-illustration";
 import { Planni } from "@/components/planni";
 import { categoryLabel } from "@/lib/categories";
@@ -296,14 +296,9 @@ export function Landing({
 
         {partners.length > 0 && (
           <section id="parteneri" className="mx-auto mt-20 max-w-7xl scroll-mt-8 px-5 sm:px-8">
-            <div className="mb-6 flex items-end justify-between gap-4">
-              <div>
-                <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-accent">Aproape de tine</p>
-                <h2 className="text-2xl font-semibold">Alege și rezervă direct</h2>
-              </div>
-              <Link href={searchHref} className="shrink-0 text-xs font-semibold text-accent hover:underline">
-                Vezi toate
-              </Link>
+            <div className="mb-6">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-accent">Aproape de tine</p>
+              <h2 className="text-2xl font-semibold">Alege și rezervă direct</h2>
             </div>
 
             <div className="grid gap-4 md:grid-cols-3">
@@ -349,28 +344,22 @@ export function Landing({
 
                     <div className="p-4">
                       <h3 className="truncate font-semibold">{merchant.business_name}</h3>
-                      <p className="mt-1 truncate text-xs text-muted-foreground">
-                        {categoryLabel(merchant.category)}
-                        {merchant.city ? ` · ${merchant.city}` : ""}
-                      </p>
+                      <p className="mt-1 truncate text-xs text-muted-foreground">{categoryLabel(merchant.category)}</p>
 
                       <div className="mt-4 flex items-center justify-between gap-3 border-t border-border pt-3">
-                        <span className="min-w-0 truncate text-xs text-muted-foreground">
-                          {fromPrice !== null ? (
-                            <>
-                              <Clock3 className="mr-1 inline size-3" aria-hidden="true" />
-                              de la {formatPrice(fromPrice, currency)}
-                            </>
-                          ) : (
-                            <>
-                              <MapPin className="mr-1 inline size-3" aria-hidden="true" />
-                              {merchant.city ?? "Vezi detalii"}
-                            </>
-                          )}
-                        </span>
-                        <span className="shrink-0 rounded-lg bg-accent px-3 py-2 text-xs font-semibold text-accent-foreground transition-all group-hover:brightness-110">
-                          Rezervă
-                        </span>
+                        {merchant.city ? (
+                          <span className="flex min-w-0 items-center gap-1 text-xs text-muted-foreground">
+                            <MapPin className="size-3.5 shrink-0" aria-hidden="true" />
+                            <span className="truncate">{merchant.city}</span>
+                          </span>
+                        ) : (
+                          <span />
+                        )}
+                        {fromPrice !== null && (
+                          <span className="shrink-0 text-xs font-semibold text-foreground">
+                            de la {formatPrice(fromPrice, currency)}
+                          </span>
+                        )}
                       </div>
                     </div>
                   </Link>
@@ -401,16 +390,11 @@ export function Landing({
           </div>
         </section>
 
-        <footer className="mx-auto mt-20 flex max-w-7xl flex-wrap items-center justify-between gap-4 border-t border-border px-5 py-8 text-xs text-muted-foreground sm:px-8">
+        <footer className="mx-auto mt-20 flex max-w-7xl items-center justify-between border-t border-border px-5 py-8 text-xs text-muted-foreground sm:px-8">
           <span>© {new Date().getFullYear()} PLANNO</span>
-          <div className="flex items-center gap-5">
-            <Link href="/search" className="transition-colors hover:text-foreground">
-              Caută
-            </Link>
-            <Link href="/signup?role=merchant" className="transition-colors hover:text-foreground">
-              Pentru business
-            </Link>
-          </div>
+          <Link href="/search" className="transition-colors hover:text-foreground">
+            Caută
+          </Link>
         </footer>
       </div>
 
@@ -422,7 +406,7 @@ export function Landing({
           onClick={() => setPlaniOpen((open) => !open)}
           aria-expanded={planiOpen}
           aria-label={planiOpen ? "Închide Plani" : "Deschide Plani"}
-          className="fixed bottom-6 right-6 z-40 flex items-center gap-3 rounded-full border border-[#56a9a5]/40 bg-card px-3 py-3 shadow-2xl shadow-[#56a9a5]/20 transition-all duration-300 hover:-translate-y-1 hover:border-[#75c8c1] active:scale-[0.98]"
+          className="fixed bottom-6 right-6 z-40 flex items-center gap-3 rounded-full border border-[#56a9a5]/40 bg-card px-3 py-3 shadow-2xl shadow-[#56a9a5]/20 transition-all duration-300 hover:-translate-y-1 hover:border-[#75c8c1] active:scale-[0.98] animate-[pulse_4s_ease-in-out_infinite]"
         >
           <Planni state="welcome" size={40} message="" />
           <span className="pr-2 text-sm font-semibold">Descoperă cu Plani</span>
@@ -443,7 +427,7 @@ export function Landing({
                   ? `${stats.merchants} ${stats.merchants === 1 ? "afacere activă" : "afaceri active"}${
                       stats.cities > 0 ? ` în ${stats.cities} ${stats.cities === 1 ? "oraș" : "orașe"}` : ""
                     }. Spune-ne ce cauți și te ducem direct la rezervare.`
-                  : "Spune-ne ce cauți și îți arătăm locurile potrivite din orașul tău."}
+                  : "Spune-ne ce cauți și îți arătăm locuri potrivite în orașul, comuna sau localitatea ta."}
               </p>
             </div>
             <Planni state="welcome" size={56} message="" />
