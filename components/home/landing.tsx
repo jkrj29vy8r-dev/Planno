@@ -36,6 +36,24 @@ const SEARCH_PROMPTS = [
 const PROMPT_CYCLE_MS = 2600;
 const PARTNER_LIMIT = 6;
 
+/** Every real, browsable category ("altele" is a merchant-classification
+ *  catch-all, not something to showcase as its own tile), in a fixed
+ *  display order -- shown always, not just once a merchant exists in
+ *  it, so the grid reads as the platform's full breadth from day one
+ *  instead of shrinking to whatever happens to have listings yet. */
+const LANDING_CATEGORY_IDS = ["salon", "barbershop", "spa", "fitness", "wellness", "padel", "auto", "transport"];
+
+const CATEGORY_TAGLINES: Record<string, string> = {
+  salon: "Relaxare & înfrumusețare",
+  barbershop: "Tuns & bărbierit clasic",
+  spa: "Masaj & tratamente relaxante",
+  fitness: "Antrenamente & clase",
+  wellness: "Terapii & recuperare",
+  padel: "Terenuri & partide",
+  auto: "Servicii auto",
+  transport: "Curse & transport local",
+};
+
 function buildSearchHref(query: string, city: string): string {
   const params = new URLSearchParams();
   if (query.trim()) params.set("q", query.trim());
@@ -88,13 +106,11 @@ export function Landing({
   const term = query.trim().toLowerCase();
 
   const categories = React.useMemo(() => {
-    const byCategory = new Map<string, number>();
+    const counts = new Map<string, number>();
     for (const merchant of inCity) {
-      byCategory.set(merchant.category, (byCategory.get(merchant.category) ?? 0) + 1);
+      counts.set(merchant.category, (counts.get(merchant.category) ?? 0) + 1);
     }
-    const tiles = Array.from(byCategory.entries())
-      .map(([id, count]) => ({ id, count }))
-      .sort((a, b) => b.count - a.count);
+    const tiles = LANDING_CATEGORY_IDS.map((id) => ({ id, count: counts.get(id) ?? 0 }));
     if (!term) return tiles;
     // Matches the slug too: Romanian labels pluralize irregularly
     // (salon -> Saloane), so "salon" would miss on the label alone.
@@ -263,9 +279,13 @@ export function Landing({
 
                     <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
 
+                    <span className="absolute right-3 top-3 rounded-full bg-black/60 px-2 py-1 text-[10px] font-medium text-white backdrop-blur-sm">
+                      {tile.count > 0 ? locationLabel(tile.count) : "În curând"}
+                    </span>
+
                     <div className="absolute inset-x-4 bottom-4">
                       <span className="text-[10px] font-semibold uppercase tracking-wider text-[#b9d9e8]">
-                        {locationLabel(tile.count)}
+                        {CATEGORY_TAGLINES[tile.id] ?? categoryLabel(tile.id)}
                       </span>
                       <h3 className="mt-1 text-xl font-semibold text-white">{categoryLabel(tile.id)}</h3>
                     </div>
