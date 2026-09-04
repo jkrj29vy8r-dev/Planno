@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { CircleUserRound, ChevronDown, Search, Star } from "lucide-react";
 import { AccountMenu } from "@/components/account-menu";
 import { DesktopNavLinks } from "@/components/desktop-nav-links";
+import { MerchantCard } from "@/components/merchant-card";
 import { avatarGradient, initials } from "@/lib/avatar";
 import { categoryLabel } from "@/lib/categories";
 import { categoryVisual } from "@/lib/category-visuals";
@@ -58,6 +59,15 @@ const SEARCH_PLACEHOLDERS = [
 const PLACEHOLDER_CYCLE_MS = 3200;
 const PLACEHOLDER_FADE_MS = 300;
 
+const BUSINESS_PREVIEW_LIMIT = 6;
+
+function buildSearchHref(query: string, city: string): string {
+  const params = new URLSearchParams();
+  if (query.trim()) params.set("q", query.trim());
+  if (city) params.set("city", city);
+  return params.size > 0 ? `/search?${params.toString()}` : "/search";
+}
+
 export function DiscoverHero({
   merchants,
   filterOptions,
@@ -102,18 +112,32 @@ export function DiscoverHero({
     );
   }, [categoryTiles, query]);
 
+  const searchHref = React.useMemo(() => buildSearchHref(query, city), [query, city]);
+
+  const businessPreview = React.useMemo(() => {
+    const term = query.trim().toLowerCase();
+    const matches = merchants.filter((merchant) => {
+      if (city && merchant.city !== city) return false;
+      if (!term) return true;
+      return (
+        merchant.business_name.toLowerCase().includes(term) ||
+        Boolean(merchant.description?.toLowerCase().includes(term)) ||
+        categoryLabel(merchant.category).toLowerCase().includes(term) ||
+        merchant.category.toLowerCase().includes(term)
+      );
+    });
+    return matches.slice(0, BUSINESS_PREVIEW_LIMIT);
+  }, [merchants, city, query]);
+
   function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
-    const params = new URLSearchParams();
-    if (query.trim()) params.set("q", query.trim());
-    if (city) params.set("city", city);
     startTransition(() => {
-      router.push(params.size > 0 ? `/search?${params.toString()}` : "/search");
+      router.push(searchHref);
     });
   }
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-5 pt-6 sm:px-8 lg:px-12">
+    <div className="mx-auto w-full max-w-6xl px-5 pb-16 pt-6 sm:px-8 lg:px-12">
       <header className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <Link href="/" className="text-xl font-semibold tracking-[-0.04em]">
@@ -241,7 +265,7 @@ export function DiscoverHero({
         </span>
       </div>
 
-      <section className="mt-6 grid grid-cols-2 gap-3 pb-16 sm:gap-5 lg:grid-cols-3" aria-label="Categorii Planno">
+      <section className="mt-6 grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3" aria-label="Categorii Planno">
         {filteredTiles.map((tile) => {
           const visual = categoryVisual(tile.id);
           return (
@@ -285,6 +309,23 @@ export function DiscoverHero({
 
       {filteredTiles.length === 0 && (
         <p className="py-16 text-center text-sm text-muted-foreground">Nu am găsit încă această categorie.</p>
+      )}
+
+      {businessPreview.length > 0 && (
+        <>
+          <div className="mt-14 flex items-end justify-between gap-4">
+            <h2 className="text-2xl font-semibold tracking-[-0.04em]">Alege și rezervă direct</h2>
+            <Link href={searchHref} className="text-xs font-medium text-accent transition-colors hover:text-accent/80">
+              Vezi toate
+            </Link>
+          </div>
+
+          <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {businessPreview.map((merchant) => (
+              <MerchantCard key={merchant.id} merchant={merchant} />
+            ))}
+          </div>
+        </>
       )}
     </div>
   );
