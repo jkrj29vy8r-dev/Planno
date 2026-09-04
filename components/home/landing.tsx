@@ -61,10 +61,6 @@ function buildSearchHref(query: string, city: string): string {
   return params.size > 0 ? `/search?${params.toString()}` : "/search";
 }
 
-function locationLabel(count: number): string {
-  return `${count} ${count === 1 ? "locație" : "locații"}`;
-}
-
 /** Teal status pill from the v0 prototype. */
 function Status({ children }: { children: React.ReactNode }) {
   return (
@@ -243,9 +239,15 @@ export function Landing({
               <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-accent">Descoperă</p>
               <h2 className="text-2xl font-semibold">Categorii populare</h2>
             </div>
-            <span className="shrink-0 text-xs text-muted-foreground">
-              {categories.length} {categories.length === 1 ? "categorie" : "categorii"}
-            </span>
+            {term && (
+              <button
+                type="button"
+                onClick={() => setQuery("")}
+                className="shrink-0 text-xs text-muted-foreground underline transition-colors hover:text-foreground"
+              >
+                Vezi toate
+              </button>
+            )}
           </div>
 
           {categories.length === 0 ? (
@@ -279,13 +281,9 @@ export function Landing({
 
                     <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
 
-                    <span className="absolute right-3 top-3 rounded-full bg-black/60 px-2 py-1 text-[10px] font-medium text-white backdrop-blur-sm">
-                      {tile.count > 0 ? locationLabel(tile.count) : "În curând"}
-                    </span>
-
                     <div className="absolute inset-x-4 bottom-4">
                       <span className="text-[10px] font-semibold uppercase tracking-wider text-[#b9d9e8]">
-                        {CATEGORY_TAGLINES[tile.id] ?? categoryLabel(tile.id)}
+                        {tile.count > 0 ? (CATEGORY_TAGLINES[tile.id] ?? categoryLabel(tile.id)) : "În curând"}
                       </span>
                       <h3 className="mt-1 text-xl font-semibold text-white">{categoryLabel(tile.id)}</h3>
                     </div>
