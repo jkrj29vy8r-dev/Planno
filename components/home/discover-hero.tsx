@@ -10,6 +10,7 @@ import { DesktopNavLinks } from "@/components/desktop-nav-links";
 import { avatarGradient, initials } from "@/lib/avatar";
 import { categoryLabel } from "@/lib/categories";
 import { categoryVisual } from "@/lib/category-visuals";
+import { cn } from "@/lib/utils";
 import type { MerchantListItem, MerchantFilterOptions } from "@/lib/data/merchants";
 import type { PlatformStats } from "@/lib/data/stats";
 import type { Tables } from "@/types/database.types";
@@ -47,6 +48,16 @@ function locationLabel(count: number): string {
   return `${count} ${count === 1 ? "locație" : "locații"}`;
 }
 
+const SEARCH_PLACEHOLDERS = [
+  "Vrei un teren de padel?",
+  "Cauți o frizerie?",
+  "Programează-te la salon...",
+  "Căutare servicii de transport...",
+];
+
+const PLACEHOLDER_CYCLE_MS = 3200;
+const PLACEHOLDER_FADE_MS = 300;
+
 export function DiscoverHero({
   merchants,
   filterOptions,
@@ -60,6 +71,19 @@ export function DiscoverHero({
   const [query, setQuery] = React.useState(initialQuery ?? "");
   const [city, setCity] = React.useState(initialCity ?? "");
   const [isPending, startTransition] = React.useTransition();
+  const [placeholderIndex, setPlaceholderIndex] = React.useState(0);
+  const [placeholderVisible, setPlaceholderVisible] = React.useState(true);
+
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      setPlaceholderVisible(false);
+      setTimeout(() => {
+        setPlaceholderIndex((prev) => (prev + 1) % SEARCH_PLACEHOLDERS.length);
+        setPlaceholderVisible(true);
+      }, PLACEHOLDER_FADE_MS);
+    }, PLACEHOLDER_CYCLE_MS);
+    return () => clearInterval(interval);
+  }, []);
 
   const categoryTiles = React.useMemo(
     () => buildCategoryTiles(city ? merchants.filter((m) => m.city === city) : merchants),
@@ -119,14 +143,12 @@ export function DiscoverHero({
       </header>
 
       <section className="pt-16 sm:pt-24">
-        <p className="mb-3 text-sm font-medium text-accent">Descoperă ceva nou</p>
-
         <h1 className="max-w-2xl text-balance text-4xl font-semibold tracking-[-0.06em] text-white sm:text-6xl">
-          Locuri care merită timpul tău.
+          Rezervă instant serviciile tale preferate.
         </h1>
 
         <p className="mt-5 max-w-md text-pretty text-sm leading-6 text-zinc-400 sm:text-base">
-          O selecție atentă de experiențe pentru zilele în care vrei să ieși din rutină.
+          De la terenuri de padel și frizerii, până la saloane și transport — simplu și rapid.
         </p>
 
         {stats.bookingsLast30Days > 0 && (
@@ -176,8 +198,14 @@ export function DiscoverHero({
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Ce ai vrea să faci?"
-            className="min-w-0 flex-1 bg-transparent py-4 text-sm outline-none placeholder:text-muted-foreground"
+            placeholder={SEARCH_PLACEHOLDERS[placeholderIndex]}
+            className={cn(
+              "min-w-0 flex-1 bg-transparent py-4 text-sm outline-none placeholder:text-muted-foreground transition-opacity duration-300",
+              // Only the placeholder cross-fades -- once there's real
+              // typed text, the interval must never touch the input's
+              // own opacity, or the query itself would flicker.
+              query.length === 0 && !placeholderVisible && "opacity-0",
+            )}
           />
         </label>
 
@@ -204,10 +232,9 @@ export function DiscoverHero({
       </form>
 
       <div className="mt-14 flex items-end justify-between gap-4">
-        <div>
-          <p className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">Explorează în</p>
-          <h2 className="mt-2 text-2xl font-semibold tracking-[-0.04em]">{city || "toate orașele"}</h2>
-        </div>
+        <h2 className="text-2xl font-semibold tracking-[-0.04em]">
+          {city ? `Categorii populare în ${city}` : "Categorii populare"}
+        </h2>
 
         <span className="text-xs text-muted-foreground">
           {filteredTiles.length} {filteredTiles.length === 1 ? "categorie" : "categorii"}
