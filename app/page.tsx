@@ -1,8 +1,7 @@
 import { Suspense } from "react";
-import { SiteHeader } from "@/components/site-header";
 import { AnnouncementBanner } from "@/components/announcement-banner";
 import { BottomNav } from "@/components/bottom-nav";
-import { Hero } from "@/components/home/hero";
+import { DiscoverHero } from "@/components/home/discover-hero";
 import { FounderLaunchSection } from "@/components/home/founder-launch-section";
 import { PartnerCta } from "@/components/home/partner-cta";
 import { ReviewsSection } from "@/components/home/reviews-section";
@@ -41,13 +40,13 @@ export default async function DiscoverPage({ searchParams }: DiscoverPageProps) 
   return (
     <div className="min-h-screen bg-background pb-28 md:pb-0">
       <AnnouncementBanner />
-      <SiteHeader />
 
-      <Hero
+      <DiscoverHero
         merchants={allMerchants}
-        categories={filterOptions.categories}
+        filterOptions={filterOptions}
         stats={stats}
         reviewerNames={reviewerNames}
+        profile={profile}
         initialQuery={params.q}
         initialCity={params.city}
       />
