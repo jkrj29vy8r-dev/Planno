@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceRoleClient } from "@/lib/supabase/service-role";
 
 export interface AuthActionState {
   error?: string;
@@ -21,10 +22,25 @@ export async function signInAction(
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error) {
     return { error: "Email sau parolă incorectă." };
+  }
+
+  // A deactivated account (see deactivateAccountAction below) still has
+  // a working password until SUPABASE_SERVICE_ROLE_KEY is configured
+  // for the admin-ban call to actually take effect -- this is what
+  // blocks re-entry at the app level in the meantime.
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("deactivated_at")
+    .eq("id", data.user.id)
+    .single();
+
+  if (profile?.deactivated_at) {
+    await supabase.auth.signOut();
+    return { error: "Acest cont a fost dezactivat." };
   }
 
   redirect(redirectTo);
@@ -79,6 +95,56 @@ export async function signOutAction() {
   const supabase = await createClient();
   await supabase.auth.signOut();
   redirect("/");
+}
+
+/**
+ * "Delete my account", implemented as a soft lock rather than an actual
+ * row delete: profiles.id cascades into merchants/bookings/reviews, so
+ * a real delete would also wipe out other people's data (a merchant's
+ * clients lose their booking history; a client's merchant loses the
+ * record of a real past visit). Instead this deactivates the owned
+ * business (if any), flags the profile, and signs out -- the row and
+ * everything referencing it stays intact.
+ *
+ * Re-authentication is blocked by signInAction's own deactivated_at
+ * check. The admin.updateUserById ban below is a stronger, auth-layer
+ * version of the same thing, but only actually runs once
+ * SUPABASE_SERVICE_ROLE_KEY is configured (createServiceRoleClient
+ * returns null until then) -- harmless to skip since the check above
+ * already covers it.
+ */
+export async function deactivateAccountAction(): Promise<AuthActionState> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "Trebuie să fii autentificat." };
+  }
+
+  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
+
+  if (profile?.role === "merchant") {
+    await supabase.from("merchants").update({ is_active: false }).eq("owner_id", user.id);
+  }
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({ deactivated_at: new Date().toISOString() })
+    .eq("id", user.id);
+
+  if (error) {
+    return { error: "Nu am putut dezactiva contul. Încearcă din nou." };
+  }
+
+  const adminClient = createServiceRoleClient();
+  if (adminClient) {
+    await adminClient.auth.admin.updateUserById(user.id, { ban_duration: "876000h" });
+  }
+
+  await supabase.auth.signOut();
+  return { message: "Contul tău a fost dezactivat." };
 }
 
 export interface UpdateContactInfoState {

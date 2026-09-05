@@ -5,6 +5,7 @@ import { SiteHeader } from "@/components/site-header";
 import { AnnouncementBanner } from "@/components/announcement-banner";
 import { BottomNav } from "@/components/bottom-nav";
 import { Card } from "@/components/ui/card";
+import { DeleteAccountSection } from "@/components/delete-account-section";
 import { getCurrentProfile } from "@/lib/data/auth";
 import { signOutAction } from "@/lib/actions/auth";
 import { avatarGradient, initials } from "@/lib/avatar";
@@ -64,6 +65,8 @@ export default async function AccountPage() {
             </button>
           </form>
         </Card>
+
+        <DeleteAccountSection isMerchant={profile.role === "merchant"} />
       </main>
       <BottomNav isAuthenticated />
     </div>
