@@ -6,6 +6,7 @@
  */
 const CATEGORY_LABELS: Record<string, string> = {
   salon: "Saloane",
+  beauty: "Make-up, manichiură & micropigmentare",
   barbershop: "Frizerii",
   spa: "Spa",
   fitness: "Fitness",
