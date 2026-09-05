@@ -100,12 +100,22 @@ export const DropdownItem = React.forwardRef<
     )}
     {...props}
   >
-    {icon && (
-      <span className="flex size-4 shrink-0 items-center justify-center [&_svg]:size-4">
-        {icon}
-      </span>
+    {/* A single top-level expression, always -- with `asChild` (e.g. a
+        Link item), Radix's Slot requires its children to resolve to
+        exactly one element. Two sibling JSX expressions ({icon &&
+        ...}{children}) build a 2-entry array even when icon is
+        falsy/absent, which Slot rejects regardless of what's actually
+        in it. This ternary keeps it to one. */}
+    {icon ? (
+      <>
+        <span className="flex size-4 shrink-0 items-center justify-center [&_svg]:size-4">
+          {icon}
+        </span>
+        {children}
+      </>
+    ) : (
+      children
     )}
-    {children}
   </DropdownMenuPrimitive.Item>
 ));
 DropdownItem.displayName = "DropdownItem";

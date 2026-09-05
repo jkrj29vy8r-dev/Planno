@@ -23,8 +23,11 @@ export function AccountMenu({ fullName }: { fullName: string }) {
       </DropdownTrigger>
       <DropdownContent>
         <DropdownLabel>{fullName}</DropdownLabel>
-        <DropdownItem asChild icon={<LayoutDashboard className="size-4" />}>
-          <Link href="/client/dashboard">Dashboard</Link>
+        <DropdownItem asChild>
+          <Link href="/client/dashboard">
+            <LayoutDashboard className="size-4" />
+            Dashboard
+          </Link>
         </DropdownItem>
         <DropdownSeparator />
         <DropdownItem
