@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Calendar, ClipboardList, Clock, CreditCard, LayoutDashboard, Lock, LogOut, Scissors, Store, Users } from "lucide-react";
+import { ArrowLeft, Calendar, ClipboardList, Clock, CreditCard, LayoutDashboard, Lock, LogOut, Scissors, Store, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { signOutAction } from "@/lib/actions/auth";
@@ -16,6 +16,26 @@ export const NAV_ITEMS = [
   { href: "/merchant/dashboard/profile", label: "Profil", icon: Store, exact: false },
   { href: "/merchant/dashboard/subscription", label: "Abonament", icon: CreditCard, exact: false },
 ];
+
+/** Exit hatch back to the consumer site -- shared by the desktop
+ *  sidebar and the mobile drawer so there's always a way out of the
+ *  merchant area, not just deeper into it. Visually separated from
+ *  NAV_ITEMS below (its own bottom border) since it leaves the
+ *  section rather than navigating within it. */
+export function SidebarBackLink({ onNavigate }: { onNavigate?: () => void }) {
+  return (
+    <div className="border-b border-border/40 px-3 pt-3 pb-2">
+      <Link
+        href="/"
+        onClick={onNavigate}
+        className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
+      >
+        <ArrowLeft className="size-4" />
+        Înapoi la Planno
+      </Link>
+    </div>
+  );
+}
 
 /** The nav item list itself, shared by the permanent desktop sidebar
  *  and the mobile drawer (MerchantMobileNav) so the two can never drift
@@ -97,6 +117,7 @@ export function MerchantSidebar({ businessName, locked = false }: { businessName
         <span className="truncate text-[15px] font-semibold tracking-tight">{businessName}</span>
       </div>
 
+      <SidebarBackLink />
       <SidebarNavLinks locked={locked} />
       <SidebarFooter />
     </aside>

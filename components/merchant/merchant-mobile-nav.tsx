@@ -4,7 +4,7 @@ import * as React from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { AnimatePresence, motion } from "framer-motion";
 import { LayoutDashboard, Menu, X } from "lucide-react";
-import { SidebarFooter, SidebarNavLinks } from "@/components/merchant/merchant-sidebar";
+import { SidebarBackLink, SidebarFooter, SidebarNavLinks } from "@/components/merchant/merchant-sidebar";
 
 interface MerchantMobileNavProps {
   businessName: string;
@@ -76,6 +76,7 @@ export function MerchantMobileNav({ businessName, locked = false }: MerchantMobi
                     </DialogPrimitive.Close>
                   </div>
 
+                  <SidebarBackLink onNavigate={() => setOpen(false)} />
                   <SidebarNavLinks locked={locked} onNavigate={() => setOpen(false)} />
                   <SidebarFooter />
                 </motion.div>

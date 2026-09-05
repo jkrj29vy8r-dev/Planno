@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LayoutDashboard, Shield, Store } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { SidebarFooter } from "@/components/merchant/merchant-sidebar";
+import { SidebarBackLink, SidebarFooter } from "@/components/merchant/merchant-sidebar";
 
 const NAV_ITEMS = [
   { href: "/admin", label: "Overview", icon: LayoutDashboard, exact: true },
@@ -29,6 +29,8 @@ export function AdminSidebar() {
         </span>
         <span className="truncate text-[15px] font-semibold tracking-tight">Admin Planno</span>
       </div>
+
+      <SidebarBackLink />
 
       <nav className="flex-1 space-y-0.5 px-3 py-4">
         {NAV_ITEMS.map((item) => (
@@ -59,25 +61,28 @@ export function AdminMobileNav() {
   const pathname = usePathname();
 
   return (
-    <div className="flex items-center gap-2 border-b border-border/40 bg-card px-5 py-3 md:hidden">
-      <span className="flex size-6 shrink-0 items-center justify-center rounded-md bg-accent/10 text-accent">
-        <Shield className="size-3.5" />
-      </span>
-      <span className="truncate text-sm font-semibold tracking-tight">Admin Planno</span>
-      <nav className="ml-auto flex gap-4">
-        {NAV_ITEMS.map((item) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            className={cn(
-              "text-xs font-medium transition-colors",
-              isNavItemActive(pathname, item) ? "text-accent" : "text-muted-foreground",
-            )}
-          >
-            {item.label}
-          </Link>
-        ))}
-      </nav>
+    <div className="border-b border-border/40 bg-card md:hidden">
+      <SidebarBackLink />
+      <div className="flex items-center gap-2 px-5 py-3">
+        <span className="flex size-6 shrink-0 items-center justify-center rounded-md bg-accent/10 text-accent">
+          <Shield className="size-3.5" />
+        </span>
+        <span className="truncate text-sm font-semibold tracking-tight">Admin Planno</span>
+        <nav className="ml-auto flex gap-4">
+          {NAV_ITEMS.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={cn(
+                "text-xs font-medium transition-colors",
+                isNavItemActive(pathname, item) ? "text-accent" : "text-muted-foreground",
+              )}
+            >
+              {item.label}
+            </Link>
+          ))}
+        </nav>
+      </div>
     </div>
   );
 }
