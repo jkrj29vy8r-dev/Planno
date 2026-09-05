@@ -8,8 +8,9 @@
 :root {
   --radius: 0.625rem;
 
-  /* Deep neutral scale -- true, low-chroma grays. Personality comes
-     from the single warm accent below, not from tinted neutrals. */
+  /* Deep neutral scale -- true, low-chroma grays throughout, including
+     the primary accent below. No saturated color anywhere in the
+     system; primary actions read via an inverted neutral instead. */
   --background: oklch(0.9911 0.002 75);
   --foreground: oklch(0.15 0.005 60);
 
@@ -25,15 +26,18 @@
   --border: oklch(0.9 0.004 60);
   --input: oklch(0.88 0.0045 60);
 
-  /* Warm copper/terracotta -- the one saturated color in the system,
-     used sparingly for primary actions and focus states. */
-  --accent: oklch(0.56 0.155 43);
+  /* Inverted neutral, not a saturated color: near-black on this
+     light background, flipping to near-white on dark below -- same
+     pair of lightness values as foreground/background themselves,
+     just swapped, so primary actions read as "the opposite surface"
+     rather than a distinct brand hue. */
+  --accent: oklch(0.15 0.005 60);
   --accent-foreground: oklch(0.99 0.005 70);
 
   --destructive: oklch(0.577 0.245 27);
   --destructive-foreground: oklch(0.99 0.005 70);
 
-  --ring: oklch(0.56 0.155 43 / 45%);
+  --ring: oklch(0.15 0.005 60 / 35%);
 
   --ease-premium: cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -62,13 +66,13 @@
   --border: #27272a;
   --input: #27272a;
 
-  --accent: oklch(0.66 0.165 43);
-  --accent-foreground: oklch(0.99 0.005 70);
+  --accent: oklch(0.96 0.003 70);
+  --accent-foreground: oklch(0.15 0.005 60);
 
   --destructive: oklch(0.66 0.22 27);
   --destructive-foreground: oklch(0.99 0.005 70);
 
-  --ring: oklch(0.66 0.165 43 / 45%);
+  --ring: oklch(0.96 0.003 70 / 35%);
 }
 
 /* Bridges the semantic CSS variables above into real Tailwind utilities:

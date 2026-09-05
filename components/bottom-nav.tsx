@@ -79,13 +79,13 @@ export function BottomNav({ isAuthenticated }: BottomNavProps) {
               href={item.href}
               className={cn(
                 "flex flex-col items-center justify-center rounded-full px-3 py-1 transition-all duration-200",
-                isActive ? "text-orange-500" : "text-zinc-400 hover:text-white",
+                isActive ? "text-zinc-100" : "text-zinc-400 hover:text-white",
               )}
               aria-current={isActive ? "page" : undefined}
             >
               <Icon className="mb-0.5 size-5" aria-hidden="true" />
               <span className="text-[10px] font-medium">{item.label}</span>
-              {isActive && <span className="mt-0.5 size-1 rounded-full bg-orange-500" aria-hidden="true" />}
+              {isActive && <span className="mt-0.5 size-1 rounded-full bg-zinc-100" aria-hidden="true" />}
             </Link>
           );
         })}

@@ -410,48 +410,49 @@ export function Landing({
         </footer>
       </div>
 
-      {/* Plani, desktop only: on mobile the floating BottomNav pill already
-          owns the bottom of the viewport and the two would overlap. */}
-      <div className="hidden md:block">
-        <button
-          type="button"
-          onClick={() => setPlaniOpen((open) => !open)}
-          aria-expanded={planiOpen}
-          aria-label={planiOpen ? "Închide Plani" : "Deschide Plani"}
-          className="fixed bottom-6 right-6 z-40 flex items-center gap-3 rounded-full border border-[#56a9a5]/40 bg-card px-3 py-3 shadow-2xl shadow-[#56a9a5]/20 transition-all duration-300 hover:-translate-y-1 hover:border-[#75c8c1] active:scale-[0.98] animate-[pulse_4s_ease-in-out_infinite]"
-        >
-          <Planni state="welcome" size={40} message="" />
-          <span className="pr-2 text-sm font-semibold">Descoperă cu Plani</span>
-        </button>
+      {/* Plani floats on mobile too now, just higher up than bottom-6:
+          the floating BottomNav pill owns the very bottom of the
+          viewport there, so both the trigger and the open card sit far
+          enough above it (accounting for the safe-area inset, same as
+          BottomNav itself) to never overlap it. */}
+      <button
+        type="button"
+        onClick={() => setPlaniOpen((open) => !open)}
+        aria-expanded={planiOpen}
+        aria-label={planiOpen ? "Închide Plani" : "Deschide Plani"}
+        className="fixed right-6 bottom-[calc(6rem+env(safe-area-inset-bottom))] z-40 flex items-center gap-3 rounded-full border border-[#56a9a5]/40 bg-card px-3 py-3 shadow-2xl shadow-[#56a9a5]/20 transition-all duration-300 hover:-translate-y-1 hover:border-[#75c8c1] active:scale-[0.98] animate-[pulse_4s_ease-in-out_infinite] md:bottom-6"
+      >
+        <Planni state="welcome" size={40} message="" />
+        <span className="pr-2 text-sm font-semibold">Descoperă cu Plani</span>
+      </button>
 
-        <div
-          className={cn(
-            "fixed inset-x-4 bottom-24 z-30 mx-auto max-w-md origin-bottom rounded-3xl border border-[#56a9a5]/30 bg-card p-5 shadow-2xl shadow-black/40 transition-all duration-500",
-            planiOpen ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-8 opacity-0",
-          )}
-        >
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#75c8c1]">Plani recomandă</p>
-              <h2 className="mt-2 text-lg font-semibold">Găsește ceva bun pentru azi</h2>
-              <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                {stats.merchants > 0
-                  ? `${stats.merchants} ${stats.merchants === 1 ? "afacere activă" : "afaceri active"}${
-                      stats.cities > 0 ? ` în ${stats.cities} ${stats.cities === 1 ? "oraș" : "orașe"}` : ""
-                    }. Spune-ne ce cauți și te ducem direct la rezervare.`
-                  : "Spune-ne ce cauți și îți arătăm locuri potrivite în orașul, comuna sau localitatea ta."}
-              </p>
-            </div>
-            <Planni state="welcome" size={56} message="" />
+      <div
+        className={cn(
+          "fixed inset-x-4 bottom-[calc(10rem+env(safe-area-inset-bottom))] z-30 mx-auto max-w-md origin-bottom rounded-3xl border border-[#56a9a5]/30 bg-card p-5 shadow-2xl shadow-black/40 transition-all duration-500 md:bottom-24",
+          planiOpen ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-8 opacity-0",
+        )}
+      >
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#75c8c1]">Plani recomandă</p>
+            <h2 className="mt-2 text-lg font-semibold">Găsește ceva bun pentru azi</h2>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+              {stats.merchants > 0
+                ? `${stats.merchants} ${stats.merchants === 1 ? "afacere activă" : "afaceri active"}${
+                    stats.cities > 0 ? ` în ${stats.cities} ${stats.cities === 1 ? "oraș" : "orașe"}` : ""
+                  }. Spune-ne ce cauți și te ducem direct la rezervare.`
+                : "Spune-ne ce cauți și îți arătăm locuri potrivite în orașul, comuna sau localitatea ta."}
+            </p>
           </div>
-          <Link
-            href={searchHref}
-            onClick={() => setPlaniOpen(false)}
-            className="mt-5 block w-full rounded-xl bg-accent px-4 py-3 text-center text-sm font-semibold text-accent-foreground transition-all hover:brightness-110 active:scale-[0.98]"
-          >
-            Începe căutarea
-          </Link>
+          <Planni state="welcome" size={56} message="" />
         </div>
+        <Link
+          href={searchHref}
+          onClick={() => setPlaniOpen(false)}
+          className="mt-5 block w-full rounded-xl bg-accent px-4 py-3 text-center text-sm font-semibold text-accent-foreground transition-all hover:brightness-110 active:scale-[0.98]"
+        >
+          Începe căutarea
+        </Link>
       </div>
     </>
   );
