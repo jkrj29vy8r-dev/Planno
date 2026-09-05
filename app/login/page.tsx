@@ -9,8 +9,11 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-6 py-16">
       <div className="w-full max-w-sm">
-        <Link href="/" className="mb-8 block text-center text-[15px] font-semibold tracking-tight">
-          Planno
+        <Link
+          href="/"
+          className="mb-8 block text-center text-[1.05rem] font-medium lowercase tracking-[-0.08em] transition-opacity hover:opacity-70 active:scale-[0.98]"
+        >
+          planno
         </Link>
 
         <Card>
