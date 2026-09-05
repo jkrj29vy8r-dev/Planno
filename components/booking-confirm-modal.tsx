@@ -90,7 +90,6 @@ export function BookingConfirmModal({
           placeholder="ex: Alex Popa"
           value={fullName}
           onChange={(event) => setFullName(event.target.value)}
-          required
         />
         <Input
           label="Număr de telefon"
@@ -98,7 +97,6 @@ export function BookingConfirmModal({
           placeholder="07xx xxx xxx"
           value={phone}
           onChange={(event) => setPhone(event.target.value)}
-          required
         />
 
         {error && <p className="text-sm text-destructive">{error}</p>}

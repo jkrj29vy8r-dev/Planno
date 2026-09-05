@@ -27,7 +27,6 @@ export function LoginForm() {
         autoComplete="email"
         placeholder="tu@exemplu.ro"
         leftIcon={<Mail className="size-4" />}
-        required
       />
       <Input
         label="Parolă"
@@ -36,7 +35,6 @@ export function LoginForm() {
         autoComplete="current-password"
         placeholder="••••••••"
         leftIcon={<Lock className="size-4" />}
-        required
       />
 
       {state.error && <p className="text-sm text-destructive">{state.error}</p>}

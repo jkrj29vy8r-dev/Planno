@@ -65,9 +65,8 @@ export function MerchantProfileForm({ merchant }: { merchant: Tables<"merchants"
           label="Numele afacerii"
           value={businessName}
           onChange={onFieldChange(setBusinessName)}
-          required
         />
-        <Select label="Categorie" value={category} onChange={onFieldChange(setCategory)} required>
+        <Select label="Categorie" value={category} onChange={onFieldChange(setCategory)}>
           {categoryOptions().map((option) => (
             <option key={option.value} value={option.value}>
               {option.label}
@@ -77,7 +76,7 @@ export function MerchantProfileForm({ merchant }: { merchant: Tables<"merchants"
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Input label="Oraș" value={city} onChange={onFieldChange(setCity)} required />
+        <Input label="Oraș" value={city} onChange={onFieldChange(setCity)} />
         <Input
           label="Telefon (opțional)"
           type="tel"

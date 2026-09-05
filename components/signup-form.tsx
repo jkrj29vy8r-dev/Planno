@@ -63,7 +63,6 @@ export function SignupForm({ initialRole = "client" }: { initialRole?: "client" 
         autoComplete="name"
         placeholder="Ana Popescu"
         leftIcon={<User className="size-4" />}
-        required
       />
       <Input
         label="Email"
@@ -72,7 +71,6 @@ export function SignupForm({ initialRole = "client" }: { initialRole?: "client" 
         autoComplete="email"
         placeholder="tu@exemplu.ro"
         leftIcon={<Mail className="size-4" />}
-        required
       />
       <Input
         label="Parolă"
@@ -81,7 +79,6 @@ export function SignupForm({ initialRole = "client" }: { initialRole?: "client" 
         autoComplete="new-password"
         placeholder="Minimum 8 caractere"
         leftIcon={<Lock className="size-4" />}
-        required
       />
 
       {state.error && <p className="text-sm text-destructive">{state.error}</p>}

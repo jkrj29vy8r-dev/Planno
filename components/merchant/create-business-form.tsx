@@ -66,13 +66,11 @@ export function CreateBusinessForm() {
           value={businessName}
           onChange={(event) => setBusinessName(event.target.value)}
           placeholder="Gentleman's Barber Club"
-          required
         />
         <Select
           label="Categorie"
           value={category}
           onChange={(event) => setCategory(event.target.value)}
-          required
         >
           <option value="" disabled>
             Alege o categorie
@@ -90,7 +88,6 @@ export function CreateBusinessForm() {
         value={city}
         onChange={(event) => setCity(event.target.value)}
         placeholder="Roman"
-        required
       />
 
       <Input

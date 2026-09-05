@@ -85,7 +85,7 @@ export function ServiceFormModal({ open, onOpenChange, merchantId, service, onSa
             <ModalTitle>{isEdit ? "Editează serviciul" : "Serviciu nou"}</ModalTitle>
           </ModalHeader>
 
-          <Input label="Nume serviciu" value={name} onChange={(e) => setName(e.target.value)} placeholder="Tuns și styling" required />
+          <Input label="Nume serviciu" value={name} onChange={(e) => setName(e.target.value)} placeholder="Tuns și styling" />
           <Input
             label="Descriere (opțional)"
             value={description}
@@ -93,7 +93,7 @@ export function ServiceFormModal({ open, onOpenChange, merchantId, service, onSa
             placeholder="Detalii despre serviciu..."
           />
           <div className="grid grid-cols-2 gap-4">
-            <Input label="Preț (RON)" type="number" min="0" step="0.01" value={price} onChange={(e) => setPrice(e.target.value)} required />
+            <Input label="Preț (RON)" type="number" min="0" step="0.01" value={price} onChange={(e) => setPrice(e.target.value)} />
             <Input
               label="Durată (minute)"
               type="number"
@@ -101,7 +101,6 @@ export function ServiceFormModal({ open, onOpenChange, merchantId, service, onSa
               step="1"
               value={duration}
               onChange={(e) => setDuration(e.target.value)}
-              required
             />
           </div>
 
