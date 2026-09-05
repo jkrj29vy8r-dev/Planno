@@ -60,6 +60,12 @@ const LANDING_CATEGORIES = [
     categoryId: "salon",
   },
   {
+    title: "Înfrumusețare",
+    meta: "Make-up, manichiură & micropigmentare",
+    image: "https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?auto=format&fit=crop&w=900&q=80",
+    categoryId: "beauty",
+  },
+  {
     title: "Wellness",
     meta: "Masaj, stretching & recuperare",
     image: "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=900&q=80",
