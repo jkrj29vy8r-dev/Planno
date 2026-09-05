@@ -1,6 +1,8 @@
 import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import type { Tables } from "@/types/database.types";
+import { addDays, addMonths, rangeForView, startOfMonth } from "@/lib/merchant-calendar";
+import { todayInZone, zonedWallTimeToUtc } from "@/lib/timezone";
 
 /** Cached per request: the layout and every dashboard page independently
  *  need the owned merchant, and this keeps that down to one query. */
@@ -150,4 +152,100 @@ export async function getMerchantClientBookings(merchantId: string, clientId: st
 
   if (error) throw error;
   return (data ?? []) as unknown as CalendarBooking[];
+}
+
+export interface MerchantOverviewStats {
+  bookingsToday: number;
+  bookingsYesterday: number;
+  revenueThisWeek: number;
+  revenueLastWeek: number;
+  revenueCurrency: string;
+  newClientsThisMonth: number;
+  newClientsLastMonth: number;
+}
+
+/**
+ * Powers the four overview cards above the calendar. One all-time
+ * bookings fetch backs every figure, so today/this-week/this-month and
+ * their prior-period comparisons all agree with each other -- and with
+ * the calendar's own date math (same rangeForView/timezone helpers).
+ */
+export async function getMerchantOverviewStats(
+  merchantId: string,
+  timezone: string,
+): Promise<MerchantOverviewStats> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("bookings")
+    .select("client_id, status, start_time, created_at, price, currency")
+    .eq("merchant_id", merchantId)
+    .neq("status", "cancelled");
+
+  if (error) throw error;
+  const rows = data ?? [];
+
+  const todayKey = todayInZone(timezone);
+  const dayRange = rangeForView("day", todayKey);
+  const yesterdayRange = rangeForView("day", addDays(todayKey, -1));
+  const weekRange = rangeForView("week", todayKey);
+  const lastWeekStartKey = addDays(weekRange.start, -7);
+  const monthStartKey = startOfMonth(todayKey);
+  const lastMonthStartKey = addMonths(monthStartKey, -1);
+
+  const toMs = (dateKey: string) => zonedWallTimeToUtc(dateKey, "00:00", timezone).getTime();
+  const dayStart = toMs(dayRange.start);
+  const dayEnd = toMs(dayRange.end);
+  const yesterdayStart = toMs(yesterdayRange.start);
+  const yesterdayEnd = toMs(yesterdayRange.end);
+  const weekStart = toMs(weekRange.start);
+  const weekEnd = toMs(weekRange.end);
+  const lastWeekStart = toMs(lastWeekStartKey);
+  const monthStart = toMs(monthStartKey);
+  const lastMonthStart = toMs(lastMonthStartKey);
+
+  let bookingsToday = 0;
+  let bookingsYesterday = 0;
+  let revenueThisWeek = 0;
+  let revenueLastWeek = 0;
+  let revenueCurrency = "RON";
+  const firstBookingByClient = new Map<string, number>();
+
+  for (const row of rows) {
+    const startMs = new Date(row.start_time).getTime();
+    const createdMs = new Date(row.created_at).getTime();
+
+    if (startMs >= dayStart && startMs < dayEnd) bookingsToday += 1;
+    else if (startMs >= yesterdayStart && startMs < yesterdayEnd) bookingsYesterday += 1;
+
+    if (row.status !== "pending") {
+      if (startMs >= weekStart && startMs < weekEnd) {
+        revenueThisWeek += Number(row.price);
+        revenueCurrency = row.currency;
+      } else if (startMs >= lastWeekStart && startMs < weekStart) {
+        revenueLastWeek += Number(row.price);
+      }
+    }
+
+    const prevFirst = firstBookingByClient.get(row.client_id);
+    if (prevFirst === undefined || createdMs < prevFirst) {
+      firstBookingByClient.set(row.client_id, createdMs);
+    }
+  }
+
+  let newClientsThisMonth = 0;
+  let newClientsLastMonth = 0;
+  for (const firstMs of firstBookingByClient.values()) {
+    if (firstMs >= monthStart) newClientsThisMonth += 1;
+    else if (firstMs >= lastMonthStart && firstMs < monthStart) newClientsLastMonth += 1;
+  }
+
+  return {
+    bookingsToday,
+    bookingsYesterday,
+    revenueThisWeek,
+    revenueLastWeek,
+    revenueCurrency,
+    newClientsThisMonth,
+    newClientsLastMonth,
+  };
 }
