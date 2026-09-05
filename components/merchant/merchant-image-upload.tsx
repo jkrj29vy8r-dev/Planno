@@ -1,10 +1,10 @@
 "use client";
 
 import * as React from "react";
-import { Camera, Loader2 } from "lucide-react";
+import { Camera, Loader2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
-import { setMerchantImageUrlAction } from "@/lib/actions/merchant";
+import { clearMerchantImageUrlAction, setMerchantImageUrlAction } from "@/lib/actions/merchant";
 import { ALLOWED_IMAGE_TYPES, MAX_IMAGE_BYTES, buildMerchantMediaPath, isAllowedImageType } from "@/lib/merchant-media";
 
 interface MerchantImageUploadProps {
@@ -36,6 +36,7 @@ export function MerchantImageUpload({ merchantId, ownerId, kind, initialUrl, lab
   const objectUrlRef = React.useRef<string | null>(null);
   const [previewUrl, setPreviewUrl] = React.useState(initialUrl);
   const [uploading, setUploading] = React.useState(false);
+  const [removing, setRemoving] = React.useState(false);
   const [error, setError] = React.useState("");
 
   React.useEffect(() => {
@@ -100,6 +101,23 @@ export function MerchantImageUpload({ merchantId, ownerId, kind, initialUrl, lab
     }
   }
 
+  async function handleRemove() {
+    setError("");
+    setRemoving(true);
+    try {
+      const result = await clearMerchantImageUrlAction(merchantId, kind);
+      if (result.error) {
+        setError(result.error);
+        return;
+      }
+      setPreviewUrl(null);
+    } catch {
+      setError("Nu am putut elimina imaginea. Verifică conexiunea și încearcă din nou.");
+    } finally {
+      setRemoving(false);
+    }
+  }
+
   const isCover = kind === "cover";
 
   return (
@@ -133,6 +151,22 @@ export function MerchantImageUpload({ merchantId, ownerId, kind, initialUrl, lab
         >
           {uploading ? <Loader2 className="size-5 animate-spin" aria-hidden="true" /> : <Camera className="size-5" aria-hidden="true" />}
         </button>
+
+        {previewUrl && !uploading && (
+          <button
+            type="button"
+            onClick={handleRemove}
+            disabled={removing}
+            aria-label={kind === "logo" ? "Elimină sigla" : "Elimină coperta"}
+            className="absolute right-1.5 top-1.5 flex size-6 items-center justify-center rounded-full bg-black/60 text-white disabled:cursor-wait"
+          >
+            {removing ? (
+              <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />
+            ) : (
+              <X className="size-3.5" aria-hidden="true" />
+            )}
+          </button>
+        )}
 
         <input
           ref={inputRef}

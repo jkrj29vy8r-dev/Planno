@@ -33,7 +33,15 @@ export function BookingCard({
   const [reviewOpen, setReviewOpen] = React.useState(false);
   const [justReviewed, setJustReviewed] = React.useState(false);
   const start = new Date(booking.start_time);
-  const canReview = !isUpcoming && booking.status === "completed" && !hasReview && !justReviewed;
+  // Matches reviews_insert_own_completed_booking: a merchant explicitly
+  // marking a booking 'completed' always qualifies, and so does a
+  // confirmed booking once its time has passed (isUpcoming already
+  // encodes that -- see getUpcomingBookings/getBookingHistory) even if
+  // no one ever flipped its status.
+  const canReview =
+    (booking.status === "completed" || (!isUpcoming && booking.status === "confirmed")) &&
+    !hasReview &&
+    !justReviewed;
 
   return (
     <>

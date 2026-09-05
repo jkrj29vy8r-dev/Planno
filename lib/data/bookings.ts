@@ -9,30 +9,45 @@ export type BookingWithDetails = Tables<"bookings"> & {
 const DETAIL_SELECT =
   "*, merchant:merchants(id, business_name, slug, city, timezone, working_hours), service:services(id, name, duration_minutes)";
 
-export async function getUpcomingBookings(clientId: string): Promise<BookingWithDetails[]> {
+/**
+ * "Upcoming" vs "history" splits on real time, not just status: a
+ * pending/confirmed booking whose end_time has already passed belongs
+ * in history even if the merchant never got around to marking it
+ * completed (most don't, for every past visit). Fetched once and
+ * split in JS rather than two time-filtered queries, so the two lists
+ * can never disagree about what "now" was between them.
+ */
+async function getClientBookings(clientId: string): Promise<BookingWithDetails[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("bookings")
     .select(DETAIL_SELECT)
     .eq("client_id", clientId)
-    .in("status", ["pending", "confirmed"])
     .order("start_time", { ascending: true });
 
   if (error) throw error;
   return (data ?? []) as unknown as BookingWithDetails[];
 }
 
-export async function getBookingHistory(clientId: string): Promise<BookingWithDetails[]> {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("bookings")
-    .select(DETAIL_SELECT)
-    .eq("client_id", clientId)
-    .in("status", ["completed", "cancelled"])
-    .order("start_time", { ascending: false });
+export async function getUpcomingBookings(clientId: string): Promise<BookingWithDetails[]> {
+  const bookings = await getClientBookings(clientId);
+  const now = Date.now();
+  return bookings.filter(
+    (b) => (b.status === "pending" || b.status === "confirmed") && new Date(b.end_time).getTime() > now,
+  );
+}
 
-  if (error) throw error;
-  return (data ?? []) as unknown as BookingWithDetails[];
+export async function getBookingHistory(clientId: string): Promise<BookingWithDetails[]> {
+  const bookings = await getClientBookings(clientId);
+  const now = Date.now();
+  return bookings
+    .filter(
+      (b) =>
+        b.status === "completed" ||
+        b.status === "cancelled" ||
+        ((b.status === "pending" || b.status === "confirmed") && new Date(b.end_time).getTime() <= now),
+    )
+    .sort((a, b) => new Date(b.start_time).getTime() - new Date(a.start_time).getTime());
 }
 
 export interface BookingNotification {

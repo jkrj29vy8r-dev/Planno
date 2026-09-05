@@ -334,6 +334,45 @@ export async function setMerchantImageUrlAction(
   return { success: true };
 }
 
+export async function clearMerchantImageUrlAction(
+  merchantId: string,
+  kind: MerchantImageKind,
+): Promise<MerchantActionState> {
+  const supabase = await createClient();
+
+  const { data: merchant, error: fetchError } = await supabase
+    .from("merchants")
+    .select("logo_url, cover_image_url")
+    .eq("id", merchantId)
+    .single();
+
+  if (fetchError || !merchant) {
+    return { error: "Nu am găsit afacerea." };
+  }
+
+  const currentUrl = kind === "logo" ? merchant.logo_url : merchant.cover_image_url;
+  const update = kind === "logo" ? { logo_url: null } : { cover_image_url: null };
+  const { error } = await supabase.from("merchants").update(update).eq("id", merchantId);
+
+  if (error) {
+    return { error: "Nu am putut actualiza profilul." };
+  }
+
+  // Best-effort, same as removeMerchantGalleryImageAction: the DB write
+  // above is what actually controls whether the image still shows
+  // anywhere.
+  if (currentUrl) {
+    const path = storagePathFromPublicUrl(currentUrl);
+    if (path) {
+      await supabase.storage.from("merchant-media").remove([path]);
+    }
+  }
+
+  revalidatePath("/merchant/dashboard", "layout");
+  revalidatePath("/merchants", "layout");
+  return { success: true };
+}
+
 export async function addMerchantGalleryUrlAction(merchantId: string, url: string): Promise<MerchantActionState> {
   const supabase = await createClient();
   const invalid = await verifyOwnMediaUrl(supabase, url);
