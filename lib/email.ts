@@ -1,5 +1,7 @@
+import { Resend } from "resend";
+
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
-const RESEND_API_URL = "https://api.resend.com/emails";
+const resend = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;
 
 /** Falls back to Resend's own shared sandbox sender so sending works the
  *  moment RESEND_API_KEY is set, with no domain to configure first --
@@ -16,12 +18,8 @@ export interface SendEmailResult {
 
 /**
  * No email provider is wired up yet -- RESEND_API_KEY doesn't exist in
- * this project's environment. Resend was picked over the alternatives
- * (SendGrid, Postmark, SES) for being a single API call with no SDK or
- * account-side template setup required, matching how lib/sms.ts stays
- * provider-thin. Swap the URL/payload/auth below if a different
- * provider is chosen instead; until a key is set this fails loudly
- * (logged, never thrown) rather than pretending to send.
+ * this project's environment, so `resend` above is null and every call
+ * fails loudly (logged, never thrown) instead of pretending to send.
  *
  * Never call this directly from a request handler a user is waiting
  * on -- wrap the call in `after()` (next/server) so a slow or down
@@ -30,25 +28,17 @@ export interface SendEmailResult {
  * result object, never throws.
  */
 export async function sendEmail(to: string, subject: string, html: string): Promise<SendEmailResult> {
-  if (!RESEND_API_KEY) {
+  if (!resend) {
     console.error("[Email] Not configured -- set RESEND_API_KEY to enable sending.");
     return { success: false, error: "Serviciul de email nu este configurat." };
   }
 
   try {
-    const response = await fetch(RESEND_API_URL, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${RESEND_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ from: EMAIL_FROM, to, subject, html }),
-    });
+    const { error } = await resend.emails.send({ from: EMAIL_FROM, to, subject, html });
 
-    if (!response.ok) {
-      const body = await response.text();
-      console.error("[Email] Provider rejected the request", { to, status: response.status, body });
-      return { success: false, error: `Provider-ul de email a răspuns cu statusul ${response.status}.` };
+    if (error) {
+      console.error("[Email] Provider rejected the request", { to, error });
+      return { success: false, error: `Provider-ul de email a refuzat trimiterea: ${error.message}` };
     }
 
     return { success: true };
