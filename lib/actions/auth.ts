@@ -152,20 +152,23 @@ export interface UpdateContactInfoState {
   success?: boolean;
 }
 
-/** Confirms/updates the caller's own name and phone -- phone in
- *  particular is never collected at sign-up, so this is the first
- *  point most clients ever set it, typically surfaced right before
- *  confirming a booking (the merchant dashboard already reads and
- *  displays profiles.phone in several places; this is what fills it). */
+/** Confirms/updates the caller's own name, phone, and contact email --
+ *  phone in particular is never collected at sign-up, so this is the
+ *  first point most clients ever set it, typically surfaced right
+ *  before confirming a booking (the merchant dashboard already reads
+ *  and displays profiles.phone in several places; this is what fills
+ *  it). */
 export async function updateContactInfoAction(input: {
   fullName: string;
   phone: string;
+  email: string;
 }): Promise<UpdateContactInfoState> {
   const fullName = input.fullName.trim();
   const phone = input.phone.trim();
+  const email = input.email.trim();
 
-  if (!fullName || !phone) {
-    return { error: "Completează numele și numărul de telefon." };
+  if (!fullName || !phone || !email) {
+    return { error: "Completează numele, telefonul și email-ul." };
   }
 
   const supabase = await createClient();
@@ -177,9 +180,13 @@ export async function updateContactInfoAction(input: {
     return { error: "Trebuie să fii autentificat." };
   }
 
+  // profiles.email is a contact-info copy, independent of the login
+  // email in auth.users -- changing it here does not touch how this
+  // user signs in, same relationship phone/full_name already have to
+  // auth.
   const { error } = await supabase
     .from("profiles")
-    .update({ full_name: fullName, phone })
+    .update({ full_name: fullName, phone, email })
     .eq("id", user.id);
 
   if (error) {

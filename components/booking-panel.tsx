@@ -320,6 +320,7 @@ export function BookingPanel({ merchant, services, profile }: BookingPanelProps)
           summary={confirmSummary()}
           initialFullName={profile.full_name}
           initialPhone={profile.phone ?? ""}
+          initialEmail={profile.email ?? ""}
           onConfirmed={handleConfirm}
         />
       )}

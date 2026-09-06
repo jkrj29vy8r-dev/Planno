@@ -13,17 +13,18 @@ interface BookingConfirmModalProps {
   summary: string;
   initialFullName: string;
   initialPhone: string;
+  initialEmail: string;
   onConfirmed: () => void;
 }
 
 /**
- * Collects/confirms the client's name and phone right before the
- * booking is created, and persists them to their profile -- phone in
- * particular is never asked for at sign-up, so for most clients this
- * is the first time it gets set. The merchant dashboard already reads
- * and displays profiles.phone in several places; this is what fills
- * it. Actual booking creation stays owned by BookingPanel (via
- * onConfirmed), which already has its own loading/success/error UI.
+ * Collects/confirms the client's name, phone, and contact email right
+ * before the booking is created, and persists them to their profile --
+ * phone in particular is never asked for at sign-up, so for most
+ * clients this is the first time it gets set. The merchant dashboard
+ * already reads and displays profiles.phone in several places; this is
+ * what fills it. Actual booking creation stays owned by BookingPanel
+ * (via onConfirmed), which already has its own loading/success/error UI.
  */
 export function BookingConfirmModal({
   open,
@@ -31,10 +32,12 @@ export function BookingConfirmModal({
   summary,
   initialFullName,
   initialPhone,
+  initialEmail,
   onConfirmed,
 }: BookingConfirmModalProps) {
   const [fullName, setFullName] = React.useState(initialFullName);
   const [phone, setPhone] = React.useState(initialPhone);
+  const [email, setEmail] = React.useState(initialEmail);
   const [saving, setSaving] = React.useState(false);
   const [error, setError] = React.useState("");
 
@@ -44,9 +47,10 @@ export function BookingConfirmModal({
     if (open) {
       setFullName(initialFullName);
       setPhone(initialPhone);
+      setEmail(initialEmail);
       setError("");
     }
-  }, [open, initialFullName, initialPhone]);
+  }, [open, initialFullName, initialPhone, initialEmail]);
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -54,7 +58,7 @@ export function BookingConfirmModal({
     setError("");
 
     try {
-      const result = await updateContactInfoAction({ fullName, phone });
+      const result = await updateContactInfoAction({ fullName, phone, email });
       if (result.error) {
         setError(result.error);
         return;
@@ -97,6 +101,13 @@ export function BookingConfirmModal({
           placeholder="07xx xxx xxx"
           value={phone}
           onChange={(event) => setPhone(event.target.value)}
+        />
+        <Input
+          label="Email"
+          type="email"
+          placeholder="tu@exemplu.ro"
+          value={email}
+          onChange={(event) => setEmail(event.target.value)}
         />
 
         {error && <p className="text-sm text-destructive">{error}</p>}
