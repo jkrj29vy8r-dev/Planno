@@ -4,6 +4,7 @@ import { after } from "next/server";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { sendBookingConfirmedClientSms } from "@/lib/booking-sms";
+import { sendBookingConfirmedClientEmail } from "@/lib/booking-email";
 import { MAX_GALLERY_IMAGES, storagePathFromPublicUrl } from "@/lib/merchant-media";
 import type { Json, TablesUpdate } from "@/types/database.types";
 
@@ -128,7 +129,9 @@ export async function updateMerchantBookingStatusAction(
     .from("bookings")
     .update(update)
     .eq("id", bookingId)
-    .select("merchant_id, start_time, merchant:merchants(business_name, timezone), service:services(name), client:profiles(phone)")
+    .select(
+      "merchant_id, start_time, merchant:merchants(business_name, timezone), service:services(name), client:profiles(phone, email)",
+    )
     .single();
 
   if (error) {
@@ -141,7 +144,7 @@ export async function updateMerchantBookingStatusAction(
   if (status === "confirmed") {
     const merchant = booking.merchant as unknown as { business_name: string; timezone: string } | null;
     const service = booking.service as unknown as { name: string } | null;
-    const client = booking.client as unknown as { phone: string | null } | null;
+    const client = booking.client as unknown as { phone: string | null; email: string | null } | null;
 
     if (merchant && service && client) {
       after(() =>
@@ -149,6 +152,15 @@ export async function updateMerchantBookingStatusAction(
           merchantId: booking.merchant_id,
           merchantName: merchant.business_name,
           clientPhone: client.phone,
+          serviceName: service.name,
+          startTime: new Date(booking.start_time),
+          timezone: merchant.timezone,
+        }),
+      );
+      after(() =>
+        sendBookingConfirmedClientEmail({
+          clientEmail: client.email,
+          merchantName: merchant.business_name,
           serviceName: service.name,
           startTime: new Date(booking.start_time),
           timezone: merchant.timezone,

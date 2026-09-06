@@ -4,6 +4,7 @@ import { after } from "next/server";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { sendNewBookingMerchantSms } from "@/lib/booking-sms";
+import { sendNewBookingMerchantEmail } from "@/lib/booking-email";
 
 export interface BookingActionState {
   error?: string;
@@ -46,7 +47,7 @@ export async function createBookingAction(input: {
       client_notes: input.clientNotes || null,
     })
     .select(
-      "start_time, merchant:merchants(business_name, phone, timezone), service:services(name), client:profiles(full_name, phone)",
+      "start_time, merchant:merchants(business_name, phone, email, timezone), service:services(name), client:profiles(full_name, phone)",
     )
     .single();
 
@@ -58,9 +59,14 @@ export async function createBookingAction(input: {
   }
 
   // Fire-and-forget: after() runs this once the response has already
-  // gone out, so a slow or down SMS provider can never delay or fail
-  // a booking that already succeeded.
-  const merchant = booking.merchant as unknown as { business_name: string; phone: string | null; timezone: string } | null;
+  // gone out, so a slow or down SMS/email provider can never delay or
+  // fail a booking that already succeeded.
+  const merchant = booking.merchant as unknown as {
+    business_name: string;
+    phone: string | null;
+    email: string | null;
+    timezone: string;
+  } | null;
   const service = booking.service as unknown as { name: string } | null;
   const client = booking.client as unknown as { full_name: string; phone: string | null } | null;
 
@@ -69,6 +75,16 @@ export async function createBookingAction(input: {
       sendNewBookingMerchantSms({
         merchantId: input.merchantId,
         merchantPhone: merchant.phone,
+        clientName: client.full_name,
+        clientPhone: client.phone,
+        serviceName: service.name,
+        startTime: new Date(booking.start_time),
+        timezone: merchant.timezone,
+      }),
+    );
+    after(() =>
+      sendNewBookingMerchantEmail({
+        merchantEmail: merchant.email,
         clientName: client.full_name,
         clientPhone: client.phone,
         serviceName: service.name,
