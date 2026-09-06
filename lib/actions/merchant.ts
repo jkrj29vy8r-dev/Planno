@@ -123,14 +123,21 @@ export async function updateMerchantBookingStatusAction(
     else update.merchant_notes = note;
   }
 
-  // The joined columns are only needed for the "booking confirmed" SMS
-  // below, not for the status update itself.
+  // The joined columns are only needed for the "booking confirmed"
+  // SMS/email below, not for the status update itself.
+  //
+  // client:profiles must name bookings_client_id_fkey explicitly --
+  // bookings has a second FK to profiles (cancelled_by), so an
+  // unqualified profiles(...) embed is ambiguous to PostgREST, which
+  // returns 300 Multiple Choices for the whole request (the status
+  // update included). See the identical note in
+  // lib/actions/bookings.ts::createBookingAction.
   const { data: booking, error } = await supabase
     .from("bookings")
     .update(update)
     .eq("id", bookingId)
     .select(
-      "merchant_id, start_time, merchant:merchants(business_name, timezone), service:services(name), client:profiles(phone, email)",
+      "merchant_id, start_time, merchant:merchants(business_name, timezone), service:services(name), client:profiles!bookings_client_id_fkey(phone, email)",
     )
     .single();
 

@@ -34,8 +34,15 @@ export async function createBookingAction(input: {
   // end_time/price are recomputed by the derive_booking_price_and_duration
   // trigger from service_id + start_time -- what's sent here for them
   // never actually reaches storage. The joined columns below aren't
-  // needed for the booking itself, only for the "new booking" SMS
+  // needed for the booking itself, only for the "new booking" SMS/email
   // fired after this returns.
+  //
+  // client:profiles must name bookings_client_id_fkey explicitly --
+  // bookings has a second FK to profiles (cancelled_by), so PostgREST
+  // can't infer which one an unqualified profiles(...) embed means and
+  // returns 300 Multiple Choices for the whole request, insert
+  // included (this silently killed every booking attempt until the
+  // hint was added here).
   const { data: booking, error } = await supabase
     .from("bookings")
     .insert({
@@ -47,7 +54,7 @@ export async function createBookingAction(input: {
       client_notes: input.clientNotes || null,
     })
     .select(
-      "start_time, merchant:merchants(business_name, phone, email, timezone), service:services(name), client:profiles(full_name, phone)",
+      "start_time, merchant:merchants(business_name, phone, email, timezone), service:services(name), client:profiles!bookings_client_id_fkey(full_name, phone)",
     )
     .single();
 
