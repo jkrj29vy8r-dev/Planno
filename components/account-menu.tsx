@@ -34,7 +34,12 @@ export function AccountMenu({ fullName }: { fullName: string }) {
           destructive
           icon={<LogOut className="size-4" />}
           onSelect={() => {
-            void signOutAction();
+            // Hard navigation, not router.push: guarantees a fresh
+            // request with the now-cleared session cookie, so there's
+            // no race with a protected page's own re-render.
+            void signOutAction().then(() => {
+              window.location.href = "/";
+            });
           }}
         >
           Deconectare

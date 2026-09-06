@@ -92,7 +92,14 @@ export function SidebarFooter() {
       <ThemeToggle />
       <button
         type="button"
-        onClick={() => void signOutAction()}
+        onClick={() => {
+          // Hard navigation, not router.push: guarantees a fresh
+          // request with the now-cleared session cookie, so there's no
+          // race with this protected dashboard's own re-render.
+          void signOutAction().then(() => {
+            window.location.href = "/";
+          });
+        }}
         className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-destructive"
       >
         <LogOut className="size-4" />

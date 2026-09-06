@@ -1,13 +1,13 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { CalendarCheck, LayoutDashboard, LogOut } from "lucide-react";
+import { CalendarCheck, LayoutDashboard } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { AnnouncementBanner } from "@/components/announcement-banner";
 import { BottomNav } from "@/components/bottom-nav";
 import { Card } from "@/components/ui/card";
 import { DeleteAccountSection } from "@/components/delete-account-section";
+import { SignOutButton } from "@/components/sign-out-button";
 import { getCurrentProfile } from "@/lib/data/auth";
-import { signOutAction } from "@/lib/actions/auth";
 import { avatarGradient, initials } from "@/lib/avatar";
 
 export const metadata = { title: "Contul meu · Planno" };
@@ -55,15 +55,7 @@ export default async function AccountPage() {
               Panoul de comerciant
             </Link>
           )}
-          <form action={signOutAction}>
-            <button
-              type="submit"
-              className="flex w-full items-center gap-3 px-5 py-4 text-left text-sm font-medium text-destructive transition-colors hover:bg-destructive/5"
-            >
-              <LogOut className="size-4" aria-hidden="true" />
-              Deconectare
-            </button>
-          </form>
+          <SignOutButton />
         </Card>
 
         <DeleteAccountSection isMerchant={profile.role === "merchant"} />

@@ -91,10 +91,17 @@ export async function signUpAction(
   return { message: "Cont creat! Verifică-ți email-ul pentru a confirma contul." };
 }
 
+/**
+ * No redirect() here on purpose -- every caller lives on a page under
+ * one of middleware's PROTECTED_PREFIXES (/account, /merchant/dashboard),
+ * and a server-side redirect from inside the action races that same
+ * page's own "no profile -> /login" guard once the session is cleared,
+ * which is what sent people to /login instead of home on sign-out.
+ * Callers do their own hard navigation after this resolves instead.
+ */
 export async function signOutAction() {
   const supabase = await createClient();
   await supabase.auth.signOut();
-  redirect("/");
 }
 
 /**

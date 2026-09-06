@@ -55,6 +55,13 @@ export async function createBookingAction(input: {
     if (error.code === EXCLUSION_VIOLATION) {
       return { error: "Acest interval tocmai a fost rezervat de altcineva. Alege alt interval." };
     }
+    // Anything else here is almost always bookings_insert_client's own
+    // RLS check failing silently (RLS violations carry no distinct
+    // code to branch on the way the overlap exclusion above does) --
+    // logged so a merchant's subscription/active-service state can
+    // actually be diagnosed instead of guessed at from a generic
+    // "couldn't create the booking" report.
+    console.error("[Rezervări] Failed to create booking", { input, error });
     return { error: "Nu am putut crea rezervarea. Încearcă din nou." };
   }
 
