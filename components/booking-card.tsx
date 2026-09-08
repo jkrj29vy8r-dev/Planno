@@ -76,9 +76,12 @@ export function BookingCard({
               </span>
               <span className="font-mono">{formatPrice(booking.price, booking.currency)}</span>
             </div>
-            {booking.status === "cancelled" && booking.cancellation_reason && (
+            {booking.status === "cancelled" && (
               <p className="text-xs text-muted-foreground">
-                Motiv: {booking.cancellation_reason}
+                {booking.cancelled_by && booking.cancelled_by !== booking.client_id
+                  ? "Anulată de comerciant"
+                  : "Anulată de tine"}
+                {booking.cancellation_reason ? ` · ${booking.cancellation_reason}` : ""}
               </p>
             )}
           </div>

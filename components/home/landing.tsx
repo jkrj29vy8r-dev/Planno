@@ -79,7 +79,7 @@ const LANDING_CATEGORIES = [
   },
   {
     title: "Transport",
-    meta: "În curând",
+    meta: "Curse & transport local",
     image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=900&q=80",
     categoryId: "transport",
   },

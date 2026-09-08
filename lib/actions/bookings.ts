@@ -5,6 +5,8 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { sendNewBookingMerchantSms } from "@/lib/booking-sms";
 import { sendNewBookingMerchantEmail } from "@/lib/booking-email";
+import { isWithinWorkingHours } from "@/lib/data/availability";
+import type { Json } from "@/types/database.types";
 
 export interface BookingActionState {
   error?: string;
@@ -29,6 +31,29 @@ export async function createBookingAction(input: {
 
   if (!user) {
     return { error: "Trebuie să fii autentificat pentru a face o rezervare." };
+  }
+
+  // getAvailableSlots (lib/data/availability.ts) already keeps the UI
+  // from ever offering an out-of-hours slot, but nothing before this
+  // re-checked a request built outside that flow -- the exclusion
+  // constraint below only ever catches double-bookings, never this.
+  const { data: bookableService, error: bookableServiceError } = await supabase
+    .from("services")
+    .select("duration_minutes, merchant:merchants(working_hours, timezone)")
+    .eq("id", input.serviceId)
+    .single();
+
+  if (bookableServiceError || !bookableService) {
+    return { error: "Serviciul nu mai există sau nu mai este disponibil." };
+  }
+
+  const serviceMerchant = bookableService.merchant as unknown as { working_hours: Json; timezone: string } | null;
+  if (serviceMerchant) {
+    const startTime = new Date(input.startTime);
+    const endTime = new Date(startTime.getTime() + bookableService.duration_minutes * 60_000);
+    if (!isWithinWorkingHours(startTime, endTime, serviceMerchant.working_hours, serviceMerchant.timezone)) {
+      return { error: "Acest interval este în afara programului de lucru." };
+    }
   }
 
   // end_time/price are recomputed by the derive_booking_price_and_duration
