@@ -49,7 +49,7 @@ const LANDING_CATEGORIES = [
   },
   {
     title: "Frizerii",
-    meta: "Servicii locale",
+    meta: "Tunsori & styling",
     image: "https://images.unsplash.com/photo-1599351431202-1e0f0137899a?auto=format&fit=crop&w=900&q=80",
     categoryId: "barbershop",
   },
