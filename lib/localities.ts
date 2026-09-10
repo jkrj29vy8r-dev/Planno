@@ -31,10 +31,16 @@ const NORMALIZED_NAMES: string[] = LOCALITIES.map((l) => normalize(l.name));
 
 /** Ranks a name that starts with the query above one that merely
  *  contains it, so typing "cluj" leads with "Cluj-Napoca" rather than
- *  some unrelated locality with "cluj" in the middle of its name. */
+ *  some unrelated locality with "cluj" in the middle of its name.
+ *
+ *  An empty query returns the `limit` biggest cities (LOCALITIES is
+ *  already population-sorted) instead of nothing -- opening the
+ *  combobox before typing anything should show a browsable list, the
+ *  same way the native <select> it replaced showed its full option
+ *  list on tap, not a blank panel. */
 export function searchLocalities(query: string, limit = 8): RoLocality[] {
   const term = normalize(query.trim());
-  if (!term) return [];
+  if (!term) return LOCALITIES.slice(0, limit);
 
   const startsWith: RoLocality[] = [];
   const contains: RoLocality[] = [];
