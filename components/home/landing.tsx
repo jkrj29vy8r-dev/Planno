@@ -6,17 +6,17 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowRight, MapPin, Search, Star } from "lucide-react";
 import { CategoryIllustration } from "@/components/category-illustration";
+import { LocalityCombobox } from "@/components/locality-combobox";
 import { Planni } from "@/components/planni";
 import { categoryLabel } from "@/lib/categories";
 import { formatPrice } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import type { MerchantFilterOptions, MerchantListItem } from "@/lib/data/merchants";
+import type { MerchantListItem } from "@/lib/data/merchants";
 import type { PlatformStats } from "@/lib/data/stats";
 import type { Tables } from "@/types/database.types";
 
 interface LandingProps {
   merchants: MerchantListItem[];
-  filterOptions: MerchantFilterOptions;
   stats: PlatformStats;
   profile: Tables<"profiles"> | null;
   initialQuery?: string;
@@ -109,7 +109,6 @@ function Status({ children }: { children: React.ReactNode }) {
 
 export function Landing({
   merchants,
-  filterOptions,
   stats,
   profile,
   initialQuery,
@@ -231,19 +230,7 @@ export function Landing({
               <label className="sr-only" htmlFor="landing-city">
                 Alege orașul
               </label>
-              <select
-                id="landing-city"
-                value={city}
-                onChange={(event) => setCity(event.target.value)}
-                className="rounded-xl bg-input px-3 py-3 text-sm outline-none"
-              >
-                <option value="">Toate orașele</option>
-                {filterOptions.cities.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
+              <LocalityCombobox id="landing-city" value={city} onChange={setCity} />
               <button
                 type="submit"
                 disabled={isPending}

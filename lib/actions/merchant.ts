@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { sendBookingConfirmedClientSms } from "@/lib/booking-sms";
 import { sendBookingConfirmedClientEmail } from "@/lib/booking-email";
+import { geocodeAddress } from "@/lib/geocoding";
 import { MAX_GALLERY_IMAGES, storagePathFromPublicUrl } from "@/lib/merchant-media";
 import type { Json, TablesUpdate } from "@/types/database.types";
 
@@ -77,6 +78,10 @@ export async function createMerchantAction(input: CreateMerchantInput): Promise<
   }
 
   const slug = await generateUniqueSlug(businessName);
+  const address = input.address?.trim() || null;
+  // Best-effort, see geocodeAddress's own doc comment -- a failed/slow
+  // lookup must never block creating the business itself.
+  const coordinates = await geocodeAddress(address, city);
 
   const { error } = await supabase.from("merchants").insert({
     owner_id: user.id,
@@ -84,10 +89,12 @@ export async function createMerchantAction(input: CreateMerchantInput): Promise<
     slug,
     category: input.category,
     city,
-    address: input.address?.trim() || null,
+    address,
     phone: input.phone?.trim() || null,
     email: input.email?.trim() || null,
     description: input.description?.trim() || null,
+    latitude: coordinates?.latitude ?? null,
+    longitude: coordinates?.longitude ?? null,
   });
 
   if (error) {
@@ -279,15 +286,22 @@ export async function updateMerchantProfileAction(
   }
 
   const supabase = await createClient();
+  const address = input.address?.trim() || null;
+  // Best-effort, see geocodeAddress's own doc comment -- a failed/slow
+  // lookup must never block saving the rest of the profile.
+  const coordinates = await geocodeAddress(address, city);
+
   const { error } = await supabase
     .from("merchants")
     .update({
       business_name: businessName,
       category: input.category,
       city,
-      address: input.address?.trim() || null,
+      address,
       phone: input.phone?.trim() || null,
       description: input.description?.trim() || null,
+      latitude: coordinates?.latitude ?? null,
+      longitude: coordinates?.longitude ?? null,
     })
     .eq("id", merchantId);
 

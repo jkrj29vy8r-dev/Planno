@@ -114,7 +114,9 @@ export type Database = {
           gallery_urls: string[]
           id: string
           is_active: boolean
+          latitude: number | null
           logo_url: string | null
+          longitude: number | null
           owner_id: string
           phone: string | null
           rating: number | null
@@ -138,7 +140,9 @@ export type Database = {
           gallery_urls?: string[]
           id?: string
           is_active?: boolean
+          latitude?: number | null
           logo_url?: string | null
+          longitude?: number | null
           owner_id: string
           phone?: string | null
           rating?: number | null
@@ -162,7 +166,9 @@ export type Database = {
           gallery_urls?: string[]
           id?: string
           is_active?: boolean
+          latitude?: number | null
           logo_url?: string | null
+          longitude?: number | null
           owner_id?: string
           phone?: string | null
           rating?: number | null
@@ -477,10 +483,6 @@ export type Database = {
       }
       is_admin: { Args: never; Returns: boolean }
       merchant_accepts_bookings: {
-        Args: { target_merchant_id: string }
-        Returns: boolean
-      }
-      merchant_has_active_subscription: {
         Args: { target_merchant_id: string }
         Returns: boolean
       }

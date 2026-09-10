@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Image from "next/image";
+import dynamic from "next/dynamic";
 import { Tabs, type TabItem } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { BookingPanel } from "@/components/booking-panel";
@@ -12,6 +13,14 @@ import { formatPrice } from "@/lib/format";
 import type { MerchantDetail } from "@/lib/data/merchants";
 import type { ReviewSummary as ReviewSummaryData } from "@/lib/data/reviews";
 import type { Tables } from "@/types/database.types";
+
+// Leaflet touches `window` at module scope, so it can never run during
+// the server render Next.js does for this "use client" tree's first
+// paint -- ssr: false skips that render instead of throwing.
+const MerchantLocationMap = dynamic(
+  () => import("@/components/merchant-location-map").then((m) => m.MerchantLocationMap),
+  { ssr: false, loading: () => <div className="h-56 w-full animate-pulse rounded-xl bg-muted sm:h-64" /> },
+);
 
 type Service = Tables<"services">;
 type TabId = "servicii" | "recenzii" | "despre" | "galerie";
@@ -182,6 +191,19 @@ function AboutTab({ merchant }: { merchant: MerchantDetail }) {
             {merchant.phone && <p>{merchant.phone}</p>}
             {merchant.email && <p>{merchant.email}</p>}
           </div>
+        </div>
+      )}
+
+      {merchant.city && (
+        <div>
+          <h3 className="mb-2 text-sm font-semibold">Locație</h3>
+          <MerchantLocationMap
+            latitude={merchant.latitude}
+            longitude={merchant.longitude}
+            address={merchant.address}
+            city={merchant.city}
+            businessName={merchant.business_name}
+          />
         </div>
       )}
     </div>

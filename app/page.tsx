@@ -4,7 +4,7 @@ import { FounderLaunchSection } from "@/components/home/founder-launch-section";
 import { Landing } from "@/components/home/landing";
 import { ReviewsSection } from "@/components/home/reviews-section";
 import { getCurrentProfile } from "@/lib/data/auth";
-import { getMerchantFilterOptions, searchMerchants } from "@/lib/data/merchants";
+import { searchMerchants } from "@/lib/data/merchants";
 import { getFeaturedReviews } from "@/lib/data/reviews";
 import { getPlatformStats } from "@/lib/data/stats";
 
@@ -19,8 +19,7 @@ interface DiscoverPageProps {
  */
 export default async function DiscoverPage({ searchParams }: DiscoverPageProps) {
   const params = await searchParams;
-  const [filterOptions, stats, allMerchants, profile, featuredReviews] = await Promise.all([
-    getMerchantFilterOptions(),
+  const [stats, allMerchants, profile, featuredReviews] = await Promise.all([
     getPlatformStats(),
     searchMerchants(),
     getCurrentProfile(),
@@ -38,7 +37,6 @@ export default async function DiscoverPage({ searchParams }: DiscoverPageProps) 
 
       <Landing
         merchants={allMerchants}
-        filterOptions={filterOptions}
         stats={stats}
         profile={profile}
         initialQuery={params.q}
