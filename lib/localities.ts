@@ -29,18 +29,29 @@ function normalize(value: string): string {
 
 const NORMALIZED_NAMES: string[] = LOCALITIES.map((l) => normalize(l.name));
 
+/** Alphabetical (Romanian collation), not population -- browsing by
+ *  județ is a lookup, not a relevance-ranked search, so it needs the
+ *  A-Z order any printed county list would use, not "biggest first". */
+const COUNTIES: string[] = Array.from(new Set(LOCALITIES.map((l) => l.county))).sort((a, b) =>
+  a.localeCompare(b, "ro"),
+);
+
+export function getCounties(): string[] {
+  return COUNTIES;
+}
+
+/** Still population-sorted (inherited from LOCALITIES' own order), so
+ *  within a county the reședință/bigger towns lead too. */
+export function getLocalitiesInCounty(county: string): RoLocality[] {
+  return LOCALITIES.filter((l) => l.county === county);
+}
+
 /** Ranks a name that starts with the query above one that merely
  *  contains it, so typing "cluj" leads with "Cluj-Napoca" rather than
- *  some unrelated locality with "cluj" in the middle of its name.
- *
- *  An empty query returns the `limit` biggest cities (LOCALITIES is
- *  already population-sorted) instead of nothing -- opening the
- *  combobox before typing anything should show a browsable list, the
- *  same way the native <select> it replaced showed its full option
- *  list on tap, not a blank panel. */
+ *  some unrelated locality with "cluj" in the middle of its name. */
 export function searchLocalities(query: string, limit = 8): RoLocality[] {
   const term = normalize(query.trim());
-  if (!term) return LOCALITIES.slice(0, limit);
+  if (!term) return [];
 
   const startsWith: RoLocality[] = [];
   const contains: RoLocality[] = [];

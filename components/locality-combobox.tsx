@@ -2,9 +2,9 @@
 
 import * as React from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { MapPin, X } from "lucide-react";
+import { ChevronLeft, MapPin, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { searchLocalities, type RoLocality } from "@/lib/localities";
+import { searchLocalities, getCounties, getLocalitiesInCounty, type RoLocality } from "@/lib/localities";
 
 export interface LocalityComboboxProps {
   id?: string;
@@ -17,11 +17,26 @@ export interface LocalityComboboxProps {
   className?: string;
 }
 
+interface Row {
+  key: string;
+  primary: string;
+  secondary?: string;
+  onSelect: () => void;
+}
+
 /**
  * Free-text autocomplete over ~4,500 Romanian localities with 1,000+
  * residents (every județ, its reședință, and every city/comună above
  * that threshold -- see lib/localities.ts), replacing a native <select>
  * that only ever listed cities where a merchant already exists.
+ *
+ * Typing always searches across all ~4,500 (unchanged). With nothing
+ * typed, tapping the field browses județ -> localitate in two short
+ * steps instead of either showing nothing or dumping every locality
+ * into one 4,500-row panel -- either of those is what the native
+ * <select> subtly promised ("tap it, see everything") without either
+ * being able to actually deliver a scrollable list at that size, or
+ * being fast to open on a phone.
  *
  * Deliberately hand-rolled instead of Radix's DropdownMenu (already a
  * dependency): DropdownMenu drives its own roving focus/typeahead across
@@ -37,6 +52,7 @@ export interface LocalityComboboxProps {
 export function LocalityCombobox({ id, value, onChange, placeholder = "Toate orașele", className }: LocalityComboboxProps) {
   const [query, setQuery] = React.useState(value);
   const [isOpen, setIsOpen] = React.useState(false);
+  const [browsingCounty, setBrowsingCounty] = React.useState<string | null>(null);
   const [highlightedIndex, setHighlightedIndex] = React.useState(0);
   const inputRef = React.useRef<HTMLInputElement>(null);
 
@@ -44,32 +60,59 @@ export function LocalityCombobox({ id, value, onChange, placeholder = "Toate ora
     setQuery(value);
   }, [value]);
 
-  const results = React.useMemo(() => searchLocalities(query, 8), [query]);
-
-  React.useEffect(() => {
-    setHighlightedIndex(0);
-  }, [results]);
-
   function commit(locality: RoLocality | null) {
     onChange(locality?.name ?? "");
     setQuery(locality?.name ?? "");
     setIsOpen(false);
+    setBrowsingCounty(null);
   }
+
+  const isBrowsing = !query.trim();
+
+  // Cheap linear scans over ~4,500 short strings at most (sub-millisecond)
+  // -- not worth memoizing given every dependency here already forces a
+  // re-render whenever it changes.
+  let rows: Row[];
+  if (!isBrowsing) {
+    rows = searchLocalities(query, 8).map((locality) => ({
+      key: `${locality.name}-${locality.county}`,
+      primary: locality.name,
+      secondary: locality.county,
+      onSelect: () => commit(locality),
+    }));
+  } else if (browsingCounty === null) {
+    rows = getCounties().map((county) => ({
+      key: county,
+      primary: county,
+      onSelect: () => setBrowsingCounty(county),
+    }));
+  } else {
+    rows = getLocalitiesInCounty(browsingCounty).map((locality) => ({
+      key: `${locality.name}-${locality.county}`,
+      primary: locality.name,
+      onSelect: () => commit(locality),
+    }));
+  }
+
+  React.useEffect(() => {
+    setHighlightedIndex(0);
+  }, [rows]);
 
   function handleKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
     if (event.key === "ArrowDown") {
       event.preventDefault();
       if (!isOpen) setIsOpen(true);
-      setHighlightedIndex((index) => Math.min(index + 1, results.length - 1));
+      setHighlightedIndex((index) => Math.min(index + 1, rows.length - 1));
     } else if (event.key === "ArrowUp") {
       event.preventDefault();
       setHighlightedIndex((index) => Math.max(index - 1, 0));
     } else if (event.key === "Enter") {
       event.preventDefault();
-      if (isOpen && results[highlightedIndex]) commit(results[highlightedIndex]);
+      if (isOpen && rows[highlightedIndex]) rows[highlightedIndex].onSelect();
     } else if (event.key === "Escape") {
       setIsOpen(false);
       setQuery(value);
+      setBrowsingCounty(null);
       inputRef.current?.blur();
     }
   }
@@ -90,12 +133,14 @@ export function LocalityCombobox({ id, value, onChange, placeholder = "Toate ora
         value={query}
         onChange={(event) => {
           setQuery(event.target.value);
+          setBrowsingCounty(null);
           setIsOpen(true);
         }}
         onFocus={() => setIsOpen(true)}
         onBlur={() => {
           setIsOpen(false);
           setQuery(value);
+          setBrowsingCounty(null);
         }}
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
@@ -114,34 +159,45 @@ export function LocalityCombobox({ id, value, onChange, placeholder = "Toate ora
       )}
 
       <AnimatePresence>
-        {isOpen && results.length > 0 && (
-          <motion.ul
-            id={id ? `${id}-listbox` : undefined}
-            role="listbox"
+        {isOpen && rows.length > 0 && (
+          <motion.div
             initial={{ opacity: 0, scale: 0.96, y: -4 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.96, y: -4 }}
             transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
-            className="glass-panel absolute inset-x-0 top-full z-50 mt-1.5 max-h-64 overflow-auto rounded-xl p-1.5"
+            className="glass-panel absolute inset-x-0 top-full z-50 mt-1.5 overflow-hidden rounded-xl p-1.5"
           >
-            {results.map((locality, index) => (
-              <li key={`${locality.name}-${locality.county}`} role="option" aria-selected={index === highlightedIndex}>
-                <button
-                  type="button"
-                  onMouseDown={(event) => event.preventDefault()}
-                  onClick={() => commit(locality)}
-                  onMouseEnter={() => setHighlightedIndex(index)}
-                  className={cn(
-                    "flex w-full items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-left text-sm transition-colors",
-                    index === highlightedIndex ? "bg-muted text-foreground" : "text-foreground/90",
-                  )}
-                >
-                  <span>{locality.name}</span>
-                  <span className="text-xs text-muted-foreground">{locality.county}</span>
-                </button>
-              </li>
-            ))}
-          </motion.ul>
+            {isBrowsing && browsingCounty !== null && (
+              <button
+                type="button"
+                onMouseDown={(event) => event.preventDefault()}
+                onClick={() => setBrowsingCounty(null)}
+                className="mb-1 flex w-full items-center gap-1.5 rounded-lg px-2.5 py-2 text-left text-sm font-medium text-foreground/90 transition-colors hover:bg-muted"
+              >
+                <ChevronLeft className="size-4 shrink-0" aria-hidden="true" />
+                {browsingCounty}
+              </button>
+            )}
+            <ul id={id ? `${id}-listbox` : undefined} role="listbox" className="max-h-72 overflow-auto">
+              {rows.map((row, index) => (
+                <li key={row.key} role="option" aria-selected={index === highlightedIndex}>
+                  <button
+                    type="button"
+                    onMouseDown={(event) => event.preventDefault()}
+                    onClick={row.onSelect}
+                    onMouseEnter={() => setHighlightedIndex(index)}
+                    className={cn(
+                      "flex w-full items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-left text-sm transition-colors",
+                      index === highlightedIndex ? "bg-muted text-foreground" : "text-foreground/90",
+                    )}
+                  >
+                    <span>{row.primary}</span>
+                    {row.secondary && <span className="text-xs text-muted-foreground">{row.secondary}</span>}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>
