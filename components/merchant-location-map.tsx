@@ -58,13 +58,14 @@ export interface MerchantLocationMapProps {
  */
 export function MerchantLocationMap({ latitude, longitude, address, city, businessName }: MerchantLocationMapProps) {
   const hasCoordinates = latitude !== null && longitude !== null;
-  const destination = hasCoordinates
-    ? `${latitude},${longitude}`
-    : [address, city, "România"].filter(Boolean).join(", ");
+  const fullAddress = [address, city].filter(Boolean).join(", ");
+  const destination = hasCoordinates ? `${latitude},${longitude}` : `${fullAddress}, România`;
   const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}`;
 
   return (
     <div className="space-y-3">
+      <p className="text-sm text-muted-foreground">{fullAddress}</p>
+
       {hasCoordinates && (
         <div className="h-56 w-full overflow-hidden rounded-xl border border-border/40 sm:h-64">
           <MapContainer
