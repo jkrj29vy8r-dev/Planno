@@ -29,6 +29,7 @@ export type Database = {
           merchant_notes: string | null
           price: number
           service_id: string
+          staff_id: string | null
           start_time: string
           status: Database["public"]["Enums"]["booking_status"]
           updated_at: string
@@ -47,6 +48,7 @@ export type Database = {
           merchant_notes?: string | null
           price?: number
           service_id: string
+          staff_id?: string | null
           start_time: string
           status?: Database["public"]["Enums"]["booking_status"]
           updated_at?: string
@@ -65,6 +67,7 @@ export type Database = {
           merchant_notes?: string | null
           price?: number
           service_id?: string
+          staff_id?: string | null
           start_time?: string
           status?: Database["public"]["Enums"]["booking_status"]
           updated_at?: string
@@ -96,6 +99,13 @@ export type Database = {
             columns: ["service_id"]
             isOneToOne: false
             referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff_members"
             referencedColumns: ["id"]
           },
         ]
@@ -327,6 +337,89 @@ export type Database = {
           },
         ]
       }
+      staff_members: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          created_at: string
+          gallery_urls: string[]
+          id: string
+          is_active: boolean
+          merchant_id: string
+          name: string
+          title: string | null
+          updated_at: string
+          working_hours: Json
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          gallery_urls?: string[]
+          id?: string
+          is_active?: boolean
+          merchant_id: string
+          name: string
+          title?: string | null
+          updated_at?: string
+          working_hours?: Json
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          gallery_urls?: string[]
+          id?: string
+          is_active?: boolean
+          merchant_id?: string
+          name?: string
+          title?: string | null
+          updated_at?: string
+          working_hours?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_members_merchant_id_fkey"
+            columns: ["merchant_id"]
+            isOneToOne: false
+            referencedRelation: "merchants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      staff_services: {
+        Row: {
+          created_at: string
+          service_id: string
+          staff_id: string
+        }
+        Insert: {
+          created_at?: string
+          service_id: string
+          staff_id: string
+        }
+        Update: {
+          created_at?: string
+          service_id?: string
+          staff_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_services_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_services_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subscriptions: {
         Row: {
           cancel_at_period_end: boolean
@@ -507,6 +600,7 @@ export type Database = {
           merchant_notes: string | null
           price: number
           service_id: string
+          staff_id: string | null
           start_time: string
           status: Database["public"]["Enums"]["booking_status"]
           updated_at: string

@@ -9,6 +9,7 @@ import { getMerchantBySlug, type MerchantDetail } from "@/lib/data/merchants";
 import { getCurrentProfile } from "@/lib/data/auth";
 import { merchantAcceptsBookings } from "@/lib/data/subscription";
 import { getMerchantReviewSummary, type ReviewSummary } from "@/lib/data/reviews";
+import { getActiveStaff } from "@/lib/data/staff";
 import { cn } from "@/lib/utils";
 import type { Tables } from "@/types/database.types";
 
@@ -45,13 +46,15 @@ export default async function MerchantPage({ params }: MerchantPageProps) {
 
   let acceptsBookings: boolean;
   let reviewSummary: ReviewSummary;
+  let staff: Tables<"staff_members">[];
   try {
     // Mirrors the RLS check -- a lapsed merchant's booking insert would
     // be rejected anyway, so the panel is hidden rather than failing on
     // submit.
-    [acceptsBookings, reviewSummary] = await Promise.all([
+    [acceptsBookings, reviewSummary, staff] = await Promise.all([
       merchantAcceptsBookings(merchant.id),
       getMerchantReviewSummary(merchant.id),
+      getActiveStaff(merchant.id),
     ]);
   } catch (error) {
     console.error("[Profil Comerciant] Failed to fetch booking/review state", { id: merchant.id, error });
@@ -77,6 +80,7 @@ export default async function MerchantPage({ params }: MerchantPageProps) {
           profile={profile}
           acceptsBookings={acceptsBookings}
           reviewSummary={reviewSummary}
+          staff={staff}
         />
       </main>
 

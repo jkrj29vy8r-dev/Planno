@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { getStaffForService } from "@/lib/data/staff";
 import { dateKeyInZone, dayKeyInZone, zonedWallTimeToUtc } from "@/lib/timezone";
 import type { DayHours } from "@/lib/working-hours";
 import type { Json } from "@/types/database.types";
@@ -53,14 +54,23 @@ export interface AvailabilityParams {
   timezone: string;
   durationMinutes: number;
   workingHours: Json;
+  /** A specific staff member's id -- when set, busy times come from
+   *  *their* bookings only, not every booking at the merchant. Omitted
+   *  entirely, this is the original merchant-as-one-resource behavior:
+   *  every call site that predates staff members (and every merchant
+   *  that never adopts them) keeps working exactly as before. */
+  staffId?: string;
 }
 
 /**
  * Real availability, not a placeholder grid: generates candidate slots
- * across the merchant's open hours for that day, then drops any slot
- * that would overlap an existing pending/confirmed booking (mirroring
- * the same overlap rule the `bookings_no_overlap` EXCLUDE constraint
- * enforces in the database) or that has already passed.
+ * across the open hours for that day (the merchant's, or a specific
+ * staff member's own -- whichever `workingHours` the caller passes),
+ * then drops any slot that would overlap an existing pending/confirmed
+ * booking for that same resource (mirroring the same overlap rule the
+ * `bookings_no_overlap` EXCLUDE constraint enforces in the database,
+ * which likewise keys on staff_id when set and merchant_id otherwise)
+ * or that has already passed.
  */
 export async function getAvailableSlots({
   merchantId,
@@ -68,6 +78,7 @@ export async function getAvailableSlots({
   timezone,
   durationMinutes,
   workingHours,
+  staffId,
 }: AvailabilityParams): Promise<Date[]> {
   const dayKey = dayKeyInZone(date, timezone);
   const hours = (workingHours as Record<string, DayHours> | null)?.[dayKey];
@@ -80,13 +91,15 @@ export async function getAvailableSlots({
   const dayEnd = zonedWallTimeToUtc(date, hours.close, timezone);
 
   const supabase = await createClient();
-  const { data: existing, error } = await supabase
+  let busyQuery = supabase
     .from("bookings")
     .select("start_time, end_time")
-    .eq("merchant_id", merchantId)
     .in("status", ["pending", "confirmed"])
     .lt("start_time", dayEnd.toISOString())
     .gt("end_time", dayStart.toISOString());
+  busyQuery = staffId ? busyQuery.eq("staff_id", staffId) : busyQuery.eq("merchant_id", merchantId);
+
+  const { data: existing, error } = await busyQuery;
 
   if (error) throw error;
 
@@ -124,4 +137,58 @@ export async function getAvailableSlots({
   }
 
   return slots;
+}
+
+export interface AnyStaffAvailabilityParams {
+  merchantId: string;
+  serviceId: string;
+  date: string;
+  timezone: string;
+  durationMinutes: number;
+  /** The merchant's own working_hours -- used only as the fallback
+   *  path below, when no staff is assigned to this service at all. */
+  workingHours: Json;
+}
+
+/**
+ * "Orice specialist disponibil": the union of every qualified, active
+ * staff member's own availability -- a slot counts as available the
+ * moment at least one of them is free for it. A service nobody is
+ * assigned to (the common case for a merchant that hasn't adopted
+ * staff at all) falls back to plain merchant-level getAvailableSlots,
+ * unchanged from before staff members existed.
+ */
+export async function getAvailableSlotsAnyStaff({
+  merchantId,
+  serviceId,
+  date,
+  timezone,
+  durationMinutes,
+  workingHours,
+}: AnyStaffAvailabilityParams): Promise<Date[]> {
+  const staff = await getStaffForService(merchantId, serviceId);
+
+  if (staff.length === 0) {
+    return getAvailableSlots({ merchantId, date, timezone, durationMinutes, workingHours });
+  }
+
+  const perStaffSlots = await Promise.all(
+    staff.map((member) =>
+      getAvailableSlots({
+        merchantId,
+        date,
+        timezone,
+        durationMinutes,
+        workingHours: member.working_hours,
+        staffId: member.id,
+      }),
+    ),
+  );
+
+  const union = new Map<number, Date>();
+  for (const slots of perStaffSlots) {
+    for (const slot of slots) union.set(slot.getTime(), slot);
+  }
+
+  return Array.from(union.values()).sort((a, b) => a.getTime() - b.getTime());
 }

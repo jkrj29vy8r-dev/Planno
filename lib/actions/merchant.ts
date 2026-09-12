@@ -330,7 +330,7 @@ type MerchantImageKind = "logo" | "cover";
  * upload now, the same way RLS gates a table write regardless of what
  * the client claims.
  */
-async function verifyOwnMediaUrl(
+export async function verifyOwnMediaUrl(
   supabase: Awaited<ReturnType<typeof createClient>>,
   url: string,
 ): Promise<{ error: string } | null> {

@@ -28,8 +28,19 @@ function extensionFor(mimeType: string): string {
  *  segment is what the merchant_media_owner_* Storage policies check
  *  against auth.uid(), and a fresh uuid per upload means a logo/cover
  *  replacement never collides with (or needs to explicitly clean up)
- *  the file it's replacing. */
-export function buildMerchantMediaPath(ownerId: string, kind: "logo" | "cover" | "gallery", mimeType: string): string {
+ *  the file it's replacing.
+ *
+ *  staff-avatar/staff-gallery reuse the same bucket and the same
+ *  owner-id-prefixed policies: a staff member isn't its own auth user
+ *  (see staff_members' own doc comment), so every upload for it is
+ *  still made by the merchant owner and keyed to their auth.uid() the
+ *  same way logo/cover/gallery already are -- no new Storage migration
+ *  needed for this to work. */
+export function buildMerchantMediaPath(
+  ownerId: string,
+  kind: "logo" | "cover" | "gallery" | "staff-avatar" | "staff-gallery",
+  mimeType: string,
+): string {
   return `${ownerId}/${kind}/${crypto.randomUUID()}.${extensionFor(mimeType)}`;
 }
 

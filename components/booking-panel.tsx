@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, Clock } from "lucide-react";
+import { Check, Clock, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { buttonVariants } from "@/lib/button-variants";
 import { Card, CardContent } from "@/components/ui/card";
@@ -16,10 +16,13 @@ import { formatDateChip, formatDateLong, formatDuration, formatPrice } from "@/l
 import { formatTimeInZone, todayInZone } from "@/lib/timezone";
 import { fetchAvailableSlotsAction } from "@/lib/actions/availability";
 import { createBookingAction } from "@/lib/actions/bookings";
+import { getStaffForServiceAction } from "@/lib/actions/staff";
 import type { MerchantDetail } from "@/lib/data/merchants";
 import type { Tables } from "@/types/database.types";
 
 type Service = Tables<"services">;
+type StaffMember = Tables<"staff_members">;
+const ANY_STAFF = "any" as const;
 
 interface BookingPanelProps {
   merchant: MerchantDetail;
@@ -46,6 +49,8 @@ export function BookingPanel({ merchant, services, profile }: BookingPanelProps)
 
   const [selectedService, setSelectedService] = React.useState<Service | null>(null);
   const [selectedDate, setSelectedDate] = React.useState(dateOptions[0]);
+  const [availableStaff, setAvailableStaff] = React.useState<StaffMember[]>([]);
+  const [selectedStaffId, setSelectedStaffId] = React.useState<string | typeof ANY_STAFF | undefined>(undefined);
   const [slots, setSlots] = React.useState<string[]>([]);
   const [slotsLoading, setSlotsLoading] = React.useState(false);
   const [selectedSlot, setSelectedSlot] = React.useState<string | null>(null);
@@ -61,12 +66,14 @@ export function BookingPanel({ merchant, services, profile }: BookingPanelProps)
   const [showSuccessModal, setShowSuccessModal] = React.useState(false);
 
   const loadSlots = React.useCallback(
-    async (service: Service, date: string) => {
+    async (service: Service, date: string, staffId?: string | typeof ANY_STAFF) => {
       setSlotsLoading(true);
       setSelectedSlot(null);
       try {
         const result = await fetchAvailableSlotsAction({
           merchantId: merchant.id,
+          serviceId: service.id,
+          staffId,
           date,
           timezone: merchant.timezone,
           durationMinutes: service.duration_minutes,
@@ -80,15 +87,32 @@ export function BookingPanel({ merchant, services, profile }: BookingPanelProps)
     [merchant.id, merchant.timezone, merchant.working_hours],
   );
 
-  function handleSelectService(service: Service) {
+  async function handleSelectService(service: Service) {
     setSelectedService(service);
     setStep("idle");
-    void loadSlots(service, selectedDate);
+    setAvailableStaff([]);
+    // Merchants who never added staff get a service with nobody
+    // assigned to it -- availableStaff stays empty, the specialist
+    // picker never renders, and staffId stays undefined all the way
+    // to createBookingAction, so this whole path is a no-op for them.
+    // A failed lookup degrades the same way (picker just doesn't
+    // render) instead of leaving service selection stuck without ever
+    // reaching loadSlots below.
+    const staff = await getStaffForServiceAction(merchant.id, service.id).catch(() => []);
+    setAvailableStaff(staff);
+    const initialStaffId = staff.length > 0 ? ANY_STAFF : undefined;
+    setSelectedStaffId(initialStaffId);
+    void loadSlots(service, selectedDate, initialStaffId);
+  }
+
+  function handleSelectStaff(staffId: string | typeof ANY_STAFF) {
+    setSelectedStaffId(staffId);
+    if (selectedService) void loadSlots(selectedService, selectedDate, staffId);
   }
 
   function handleSelectDate(date: string) {
     setSelectedDate(date);
-    if (selectedService) void loadSlots(selectedService, date);
+    if (selectedService) void loadSlots(selectedService, date, selectedStaffId);
   }
 
   async function handleConfirm() {
@@ -97,6 +121,7 @@ export function BookingPanel({ merchant, services, profile }: BookingPanelProps)
     const result = await createBookingAction({
       merchantId: merchant.id,
       serviceId: selectedService.id,
+      staffId: selectedStaffId,
       startTime: selectedSlot,
       clientNotes: notes || undefined,
     });
@@ -122,11 +147,18 @@ export function BookingPanel({ merchant, services, profile }: BookingPanelProps)
         : selectedDate === dateOptions[1]
           ? "mâine"
           : formatDateLong(new Date(`${selectedDate}T12:00:00Z`), merchant.timezone);
-    return `${selectedService.name} · ${dayLabel} la ${formatTimeInZone(new Date(selectedSlot), merchant.timezone)}`;
+    const staffName =
+      selectedStaffId && selectedStaffId !== ANY_STAFF
+        ? availableStaff.find((s) => s.id === selectedStaffId)?.name
+        : undefined;
+    const withStaff = staffName ? ` cu ${staffName}` : "";
+    return `${selectedService.name} · ${dayLabel} la ${formatTimeInZone(new Date(selectedSlot), merchant.timezone)}${withStaff}`;
   }
 
   function resetFlow() {
     setSelectedService(null);
+    setAvailableStaff([]);
+    setSelectedStaffId(undefined);
     setSelectedSlot(null);
     setNotes("");
     setStep("idle");
@@ -218,6 +250,61 @@ export function BookingPanel({ merchant, services, profile }: BookingPanelProps)
                   transition={{ duration: 0.2, ease: EASE }}
                   className="space-y-5"
                 >
+                  {/* Only for a service someone is actually assigned to --
+                      a merchant with no staff never sees this, and the
+                      flow below is unchanged for them. */}
+                  {availableStaff.length > 0 && (
+                    <div>
+                      <p className="mb-2 text-sm font-medium">Alege un specialist</p>
+                      <div className="flex gap-2 overflow-x-auto pb-1">
+                        <button
+                          type="button"
+                          onClick={() => handleSelectStaff(ANY_STAFF)}
+                          className={cn(
+                            "flex shrink-0 flex-col items-center gap-1.5 rounded-lg border px-3 py-2 text-xs transition-colors",
+                            selectedStaffId === ANY_STAFF
+                              ? "border-accent bg-accent text-accent-foreground"
+                              : "border-border/50 text-muted-foreground hover:bg-muted/60",
+                          )}
+                        >
+                          <span className="flex size-9 items-center justify-center rounded-full bg-muted/60 text-current">
+                            <Users className="size-4" aria-hidden="true" />
+                          </span>
+                          <span className="max-w-20 truncate font-medium">Oricine disponibil</span>
+                        </button>
+                        {availableStaff.map((staff) => {
+                          const isSelected = selectedStaffId === staff.id;
+                          return (
+                            <button
+                              key={staff.id}
+                              type="button"
+                              onClick={() => handleSelectStaff(staff.id)}
+                              className={cn(
+                                "flex shrink-0 flex-col items-center gap-1.5 rounded-lg border px-3 py-2 text-xs transition-colors",
+                                isSelected
+                                  ? "border-accent bg-accent text-accent-foreground"
+                                  : "border-border/50 text-muted-foreground hover:bg-muted/60",
+                              )}
+                            >
+                              {staff.avatar_url ? (
+                                <img
+                                  src={staff.avatar_url}
+                                  alt=""
+                                  className="size-9 rounded-full object-cover object-center"
+                                />
+                              ) : (
+                                <span className="flex size-9 items-center justify-center rounded-full bg-muted/60 text-sm font-semibold text-current">
+                                  {staff.name.charAt(0).toUpperCase()}
+                                </span>
+                              )}
+                              <span className="max-w-20 truncate font-medium">{staff.name}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
                   <div>
                     <p className="mb-2 text-sm font-medium">Alege o zi</p>
                     <div className="flex gap-1.5 overflow-x-auto pb-1">

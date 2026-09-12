@@ -4,11 +4,21 @@ import * as React from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { updateWorkingHoursAction } from "@/lib/actions/merchant";
 import { DAY_KEYS, DAY_LABELS, type DayHours, type WorkingHours } from "@/lib/working-hours";
 import type { Json } from "@/types/database.types";
 
-export function WorkingHoursEditor({ merchantId, workingHours }: { merchantId: string; workingHours: WorkingHours }) {
+interface WorkingHoursEditorProps {
+  workingHours: WorkingHours;
+  /** Entity-agnostic on purpose: this same editor backs both the
+   *  merchant's own Program page (updateWorkingHoursAction) and a
+   *  staff member's schedule (updateStaffWorkingHoursAction) -- the
+   *  day/break editing UI is identical, only which row gets written
+   *  differs, so that's the one thing callers plug in. */
+  onSave: (hours: Json) => Promise<{ error?: string }>;
+  title?: string;
+}
+
+export function WorkingHoursEditor({ workingHours, onSave, title = "Program de lucru" }: WorkingHoursEditorProps) {
   const [hours, setHours] = React.useState<WorkingHours>(workingHours);
   const [saving, setSaving] = React.useState(false);
   const [saved, setSaved] = React.useState(false);
@@ -38,7 +48,7 @@ export function WorkingHoursEditor({ merchantId, workingHours }: { merchantId: s
   async function handleSave() {
     setSaving(true);
     setError("");
-    const result = await updateWorkingHoursAction(merchantId, hours as unknown as Json);
+    const result = await onSave(hours as unknown as Json);
     setSaving(false);
     if (result.error) {
       setError(result.error);
@@ -50,7 +60,7 @@ export function WorkingHoursEditor({ merchantId, workingHours }: { merchantId: s
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold tracking-tight">Program de lucru</h1>
+        <h1 className="text-xl font-semibold tracking-tight">{title}</h1>
         <Button size="sm" onClick={handleSave} isLoading={saving}>
           {saved ? "Salvat" : "Salvează"}
         </Button>

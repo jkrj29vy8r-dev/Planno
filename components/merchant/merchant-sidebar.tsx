@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ArrowLeft, Calendar, ClipboardList, Clock, CreditCard, LayoutDashboard, Lock, LogOut, Scissors, Store, Users } from "lucide-react";
+import { ArrowLeft, Calendar, ClipboardList, Clock, CreditCard, LayoutDashboard, Lock, LogOut, Scissors, Store, Users, UsersRound } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { signOutAction } from "@/lib/actions/auth";
@@ -11,6 +11,7 @@ export const NAV_ITEMS = [
   { href: "/merchant/dashboard", label: "Calendar", icon: Calendar, exact: true },
   { href: "/merchant/dashboard/bookings", label: "Programări", icon: ClipboardList, exact: false },
   { href: "/merchant/dashboard/services", label: "Servicii", icon: Scissors, exact: false },
+  { href: "/merchant/dashboard/staff", label: "Echipă", icon: UsersRound, exact: false },
   { href: "/merchant/dashboard/program", label: "Program", icon: Clock, exact: false },
   { href: "/merchant/dashboard/clients", label: "Clienți", icon: Users, exact: false },
   { href: "/merchant/dashboard/profile", label: "Profil", icon: Store, exact: false },

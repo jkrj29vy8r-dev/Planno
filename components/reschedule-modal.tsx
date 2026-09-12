@@ -45,8 +45,16 @@ export function RescheduleModal({ open, onOpenChange, booking, onRescheduled }: 
       setSlotsLoading(true);
       setSelectedSlot(null);
       try {
+        // Carries the original staff_id along (undefined, not null, to
+        // match fetchAvailableSlotsAction's "no staff" shape): showing
+        // slots for the merchant/"any" instead would let this modal
+        // offer a time that specific specialist isn't actually free
+        // for, only to fail at confirm since reschedule_booking keeps
+        // that same staff_id on the replacement booking.
         const result = await fetchAvailableSlotsAction({
           merchantId: booking.merchant.id,
+          serviceId: booking.service_id,
+          staffId: booking.staff_id ?? undefined,
           date,
           timezone,
           durationMinutes: booking.service.duration_minutes,
@@ -57,7 +65,14 @@ export function RescheduleModal({ open, onOpenChange, booking, onRescheduled }: 
         setSlotsLoading(false);
       }
     },
-    [booking.merchant.id, booking.merchant.working_hours, booking.service.duration_minutes, timezone],
+    [
+      booking.merchant.id,
+      booking.merchant.working_hours,
+      booking.service.duration_minutes,
+      booking.service_id,
+      booking.staff_id,
+      timezone,
+    ],
   );
 
   React.useEffect(() => {
