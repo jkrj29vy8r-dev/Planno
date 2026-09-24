@@ -32,7 +32,7 @@ export default async function MerchantDashboardLayout({ children }: { children: 
           </div>
         </div>
 
-        <CreateBusinessForm />
+        <CreateBusinessForm defaultEmail={profile.email} />
 
         <Link href="/" className={buttonVariants({ variant: "ghost", size: "sm" })}>
           Înapoi la Planno

@@ -12,19 +12,23 @@ import { createMerchantAction } from "@/lib/actions/merchant";
  * The one-time step between a merchant-role signup and a real
  * dashboard. Only what the storefront actually needs to not look
  * empty on day one is required (name, category, city); contact
- * details are optional here since there's no settings page yet to
- * edit them from -- forcing them now would just be friction with no
- * later fallback. Working hours, logo, and cover photo all keep the
- * schema's own defaults and are editable from the dashboard afterward.
+ * details are optional here since a merchant can always add/change
+ * them later from the profile settings page. Working hours, logo, and
+ * cover photo all keep the schema's own defaults and are editable
+ * from the dashboard afterward.
  */
-export function CreateBusinessForm() {
+export function CreateBusinessForm({ defaultEmail }: { defaultEmail: string | null }) {
   const router = useRouter();
   const [businessName, setBusinessName] = React.useState("");
   const [category, setCategory] = React.useState("");
   const [city, setCity] = React.useState("");
   const [address, setAddress] = React.useState("");
   const [phone, setPhone] = React.useState("");
-  const [email, setEmail] = React.useState("");
+  // Defaults to the account's own login email -- notifications need
+  // *some* address to go to, and this is the one thing the merchant
+  // has already typed once; still editable for a business inbox that
+  // differs from the owner's personal login.
+  const [email, setEmail] = React.useState(defaultEmail ?? "");
   const [description, setDescription] = React.useState("");
   const [saving, setSaving] = React.useState(false);
   const [error, setError] = React.useState("");
