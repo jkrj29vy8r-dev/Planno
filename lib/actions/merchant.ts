@@ -267,13 +267,14 @@ export interface UpdateMerchantProfileInput {
   city: string;
   address?: string;
   phone?: string;
+  email?: string;
   description?: string;
 }
 
 /** The dashboard-editable subset of merchants -- mirrors
- *  CreateMerchantInput's fields (minus email, which has no field in
- *  this form) since they're the same "what the storefront shows"
- *  data, just editable after the fact instead of once at creation. */
+ *  CreateMerchantInput's fields, since they're the same "what the
+ *  storefront shows" data, just editable after the fact instead of
+ *  once at creation. */
 export async function updateMerchantProfileAction(
   merchantId: string,
   input: UpdateMerchantProfileInput,
@@ -299,6 +300,7 @@ export async function updateMerchantProfileAction(
       city,
       address,
       phone: input.phone?.trim() || null,
+      email: input.email?.trim() || null,
       description: input.description?.trim() || null,
       latitude: coordinates?.latitude ?? null,
       longitude: coordinates?.longitude ?? null,

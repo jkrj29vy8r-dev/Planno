@@ -14,6 +14,7 @@ export function MerchantProfileForm({ merchant }: { merchant: Tables<"merchants"
   const [city, setCity] = React.useState(merchant.city ?? "");
   const [address, setAddress] = React.useState(merchant.address ?? "");
   const [phone, setPhone] = React.useState(merchant.phone ?? "");
+  const [email, setEmail] = React.useState(merchant.email ?? "");
   const [description, setDescription] = React.useState(merchant.description ?? "");
   const [saving, setSaving] = React.useState(false);
   const [saved, setSaved] = React.useState(false);
@@ -32,6 +33,7 @@ export function MerchantProfileForm({ merchant }: { merchant: Tables<"merchants"
         city,
         address,
         phone,
+        email,
         description,
       });
 
@@ -86,12 +88,26 @@ export function MerchantProfileForm({ merchant }: { merchant: Tables<"merchants"
         />
       </div>
 
-      <Input
-        label="Adresă (opțional)"
-        value={address}
-        onChange={onFieldChange(setAddress)}
-        placeholder="Str. Republicii 12"
-      />
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Input
+          label="Adresă (opțional)"
+          value={address}
+          onChange={onFieldChange(setAddress)}
+          placeholder="Str. Republicii 12"
+        />
+        {/* Where sendNewBookingMerchantEmail (lib/booking-email.ts)
+            delivers "new booking" notifications -- without this,
+            createMerchantAction's own optional email field can never
+            be filled in later, so a merchant who skipped it at
+            signup had no way to start receiving them. */}
+        <Input
+          label="Email afacere (opțional)"
+          type="email"
+          value={email}
+          onChange={onFieldChange(setEmail)}
+          placeholder="contact@afacerea-ta.ro"
+        />
+      </div>
 
       <div className="flex flex-col gap-1.5">
         <label htmlFor="merchant-description" className="text-sm font-medium text-foreground/90">
