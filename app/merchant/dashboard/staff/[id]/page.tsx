@@ -55,7 +55,7 @@ export default async function MerchantStaffDetailPage({ params }: StaffDetailPag
       <WorkingHoursEditor
         title="Programul specialistului"
         workingHours={staff.working_hours as unknown as WorkingHours}
-        onSave={(hours) => updateStaffWorkingHoursAction(staff.id, hours)}
+        onSave={updateStaffWorkingHoursAction.bind(null, staff.id)}
       />
 
       <div className="space-y-2">

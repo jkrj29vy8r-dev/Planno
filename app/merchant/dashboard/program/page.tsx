@@ -16,7 +16,7 @@ export default async function MerchantProgramPage() {
     <div className="mx-auto max-w-3xl px-6 py-8">
       <WorkingHoursEditor
         workingHours={merchant.working_hours as unknown as WorkingHours}
-        onSave={(hours) => updateWorkingHoursAction(merchant.id, hours)}
+        onSave={updateWorkingHoursAction.bind(null, merchant.id)}
       />
     </div>
   );
